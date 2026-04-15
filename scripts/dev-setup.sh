@@ -303,8 +303,43 @@ for c in challenges:
   fi
 fi
 
-# ---- Update landing page ----
-if [ "$NEEDS_SETUP" = true ] && [ -n "${API_TOKEN:-}" ]; then
+# ---- Ensure correct config (runs every time, not just first setup) ----
+# Get API token if we don't already have one
+if [ -z "${API_TOKEN:-}" ]; then
+  step "Authenticating for config sync..."
+  NONCE=$(curl -sf -c /tmp/ctfd_cookies.txt http://localhost:8000/login | sed -n 's/.*name="nonce"[^>]*value="\([^"]*\)".*/\1/p' | head -1)
+  curl -sf -b /tmp/ctfd_cookies.txt -c /tmp/ctfd_cookies.txt \
+    -X POST http://localhost:8000/login \
+    -d "name=admin&password=admin&nonce=$NONCE&_submit=Submit" \
+    -L -o /dev/null 2>/dev/null
+  CSRF=$(curl -sf -b /tmp/ctfd_cookies.txt http://localhost:8000/settings 2>/dev/null | sed -n "s/.*'csrfNonce':[[:space:]]*\"\([^\"]*\)\".*/\1/p" | head -1)
+  TOKEN_RESP=$(curl -sf -b /tmp/ctfd_cookies.txt \
+    -X POST http://localhost:8000/api/v1/tokens \
+    -H "Content-Type: application/json" \
+    -H "CSRF-Token: $CSRF" \
+    -d '{"description":"dev-setup-config","expiration":null}' 2>/dev/null)
+  API_TOKEN=$(echo "$TOKEN_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['value'])" 2>/dev/null || echo "")
+  rm -f /tmp/ctfd_cookies.txt
+fi
+
+if [ -n "${API_TOKEN:-}" ]; then
+  step "Syncing platform config..."
+
+  # Ensure theme is set to arcade
+  curl -sf -X PATCH "http://localhost:8000/api/v1/configs/ctf_theme" \
+    -H "Authorization: Token $API_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"value": "arcade"}' -o /dev/null 2>/dev/null
+  ok "Theme: arcade"
+
+  # Ensure CTF name is correct
+  curl -sf -X PATCH "http://localhost:8000/api/v1/configs/ctf_name" \
+    -H "Authorization: Token $API_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"value": "TechFest 2026"}' -o /dev/null 2>/dev/null
+  ok "CTF name: TechFest 2026"
+
+  # Always update landing page content
   step "Setting up landing page..."
   curl -sf -X PATCH "http://localhost:8000/api/v1/pages/1" \
     -H "Authorization: Token $API_TOKEN" \
@@ -313,6 +348,8 @@ if [ "$NEEDS_SETUP" = true ] && [ -n "${API_TOKEN:-}" ]; then
       "content": "<div class=\"landing-hero\"><div class=\"hero-glitch\" data-text=\"TECHFEST CTF 2026\">TECHFEST CTF 2026</div><div class=\"hero-tagline typewriter\">CYBERPUNK ARCADE EDITION</div><div class=\"hero-cta\"><a href=\"/challenges\" class=\"hero-btn\">INSERT COIN</a><a href=\"/register\" class=\"hero-btn hero-btn-alt\">JOIN THE GRID</a></div><div class=\"hero-stats\"><div class=\"hero-stat\"><span class=\"hero-stat-num\">71</span><span class=\"hero-stat-label\">CHALLENGES</span></div><div class=\"hero-stat\"><span class=\"hero-stat-num\">9</span><span class=\"hero-stat-label\">ZONES</span></div><div class=\"hero-stat\"><span class=\"hero-stat-num\">10</span><span class=\"hero-stat-label\">MAX PARTY</span></div></div></div>"
     }' -o /dev/null
   ok "Landing page configured"
+else
+  warn "Could not get API token — landing page and config must be set manually via admin panel."
 fi
 
 # ---- Done ----

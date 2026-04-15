@@ -57,18 +57,48 @@ curl -sf http://localhost:8000/ >/dev/null 2>&1 || {
 # Login and get API token
 echo -e "${CYAN}▸${NC} Authenticating..."
 NONCE=$(curl -sf -c /tmp/ctfd_import_cookies.txt http://localhost:8000/login | sed -n 's/.*name="nonce"[^>]*value="\([^"]*\)".*/\1/p' | head -1)
-curl -sf -b /tmp/ctfd_import_cookies.txt -c /tmp/ctfd_import_cookies.txt \
+if [ -z "$NONCE" ]; then
+  echo -e "${RED}✗ Could not extract CSRF nonce from login page${NC}"
+  echo "  Is CTFd running at http://localhost:8000 and showing the login page?"
+  exit 1
+fi
+
+LOGIN_CODE=$(curl -s -o /dev/null -w "%{http_code}" -b /tmp/ctfd_import_cookies.txt -c /tmp/ctfd_import_cookies.txt \
   -X POST http://localhost:8000/login \
   -d "name=admin&password=admin&nonce=$NONCE&_submit=Submit" \
-  -L -o /dev/null
+  -L 2>/dev/null)
+echo -e "  Login response: $LOGIN_CODE"
 
-CSRF=$(curl -sf -b /tmp/ctfd_import_cookies.txt http://localhost:8000/settings | sed -n "s/.*'csrfNonce':[[:space:]]*\"\([^\"]*\)\".*/\1/p" | head -1)
+SETTINGS_PAGE=$(curl -sf -b /tmp/ctfd_import_cookies.txt http://localhost:8000/settings 2>/dev/null || echo "")
+if echo "$SETTINGS_PAGE" | grep -q "csrfNonce"; then
+  CSRF=$(echo "$SETTINGS_PAGE" | sed -n "s/.*'csrfNonce':[[:space:]]*\"\([^\"]*\)\".*/\1/p" | head -1)
+else
+  echo -e "${RED}✗ Login failed — could not reach settings page${NC}"
+  echo "  Check credentials: admin / admin"
+  echo "  If you changed the admin password, edit this script or use the admin panel."
+  rm -f /tmp/ctfd_import_cookies.txt
+  exit 1
+fi
+
 TOKEN_RESP=$(curl -sf -b /tmp/ctfd_import_cookies.txt \
   -X POST http://localhost:8000/api/v1/tokens \
   -H "Content-Type: application/json" \
   -H "CSRF-Token: $CSRF" \
-  -d '{"description":"import-script","expiration":null}')
-API_TOKEN=$(echo "$TOKEN_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['value'])")
+  -d '{"description":"import-script","expiration":null}' 2>/dev/null || echo "")
+API_TOKEN=$(echo "$TOKEN_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['value'])" 2>/dev/null || echo "")
+
+if [ -z "$API_TOKEN" ]; then
+  echo -e "${RED}✗ Could not generate API token${NC}"
+  echo "  CSRF token: ${CSRF:-empty}"
+  echo "  Token response: ${TOKEN_RESP:-empty}"
+  echo ""
+  echo "  Try a clean restart:"
+  echo "    docker compose down -v"
+  echo "    ./scripts/dev-setup.sh"
+  rm -f /tmp/ctfd_import_cookies.txt
+  exit 1
+fi
+
 rm -f /tmp/ctfd_import_cookies.txt
 
 echo -e "  ${GREEN}✓ Authenticated${NC}"
