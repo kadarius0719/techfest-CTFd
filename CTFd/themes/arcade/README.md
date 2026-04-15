@@ -1,56 +1,73 @@
-# core-beta
+# Arcade Theme — TechFest CTF 2026
 
-Rewritten version of the CTFd core theme to use Bootstrap 5, Alpine.js, and vite to improve upon the existing CTFd theme structure.
+Custom CTFd theme with a cyberpunk arcade aesthetic. Built on CTFd's core-beta theme structure using Alpine.js, Bootstrap 5, and Vite.
 
-## Subtree Installation
+## Features
 
-### Add repo to themes folder
+- **Pac-Man maze overworld** — 9 category zones arranged as an interactive maze
+- **Zone view** — Click a category node to enter its challenge list
+- **Boss challenges** — "BOSS FIGHT" badges with animated glow borders, gated by prerequisites
+- **Easter Egg zone** — Hidden `?` node with 15 secret challenges
+- **Scoreboard** — Neon-styled high-score leaderboard with egg flair badges
+- **Team profiles** — Trophy case showing discovered Easter Eggs
+- **CRT effects** — Scanlines overlay, neon glow text-shadows, pixel borders
+
+## Visual Design
+
+- **Fonts:** Press Start 2P (headers), VT323 (body)
+- **Colors:** Dark backgrounds (#0a0a0a, #1a1a2e), neon accents (#ff00ff, #00ffff, #39ff14, #ff6b35)
+- **Effects:** CRT scanlines (CSS overlay), neon glow text-shadows, pixel borders, hover animations
+
+## Directory Structure
 
 ```
-git subtree add --prefix CTFd/themes/core-beta git@github.com:CTFd/core-beta.git main --squash
+arcade/
+  assets/               Source files (JS, SCSS) — editable
+  static/               Compiled output (Vite) — do not edit directly
+  templates/            Jinja2 templates
+  package.json          Node dependencies
+  vite.config.js        Vite build configuration
 ```
 
-### Pull latest changes to subtree
+## Building
 
+The theme is built automatically inside Docker during `docker compose up --build`. No host tools required.
+
+### For local development (live reload)
+
+If you want to iterate on the theme with faster rebuilds:
+
+```bash
+# Prerequisites: Node.js 18+ and Yarn
+cd CTFd/themes/arcade
+yarn install
+yarn build          # One-time production build
+yarn dev            # Watch mode (rebuilds on file change)
 ```
-git subtree pull --prefix CTFd/themes/core-beta git@github.com:CTFd/core-beta.git main --squash
+
+Then use the dev compose override to mount your local source into the container:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ```
 
-### Subtree Gotcha
+Or use the dev setup script which handles this automatically:
 
-Make sure to use Merge Commits when dealing with the subtree here. For some reason Github's squash and commit uses the wrong line ending which causes issues with the subtree script: https://stackoverflow.com/a/47190256.
+```bash
+./scripts/dev-setup.sh               # Full setup with local theme build
+./scripts/dev-setup.sh --rebuild-theme  # Just rebuild theme + restart
+```
 
-## Creating Custom Theme (based on core-beta)
+After rebuilding, hard-refresh your browser (Cmd+Shift+R) to pick up new assets.
 
-To create a custom theme based on the core-beta one, here are the steps to follow:
+## How It Works
 
-1. Clone core-beta theme locally to a seperate folder
+- **`assets/`** contains the source SCSS and JavaScript files you edit
+- **Vite** compiles these into content-hashed files in `static/` (e.g., `main-abc123.js`)
+- **`static/.vite/manifest.json`** maps source paths to hashed filenames
+- CTFd's `Assets()` helper reads the manifest to resolve `{{ Assets("path") }}` in templates
+- The Dockerfile runs `yarn build` in a Node stage, then copies `static/` into the final image
 
-   ```
-   git clone https://github.com/CTFd/core-beta.git custom-theme
-   ```
+## Based On
 
-   To clarify the structure of the project, the `./assets` folder contains the uncompiled source files (the ones you can modify), while the `./static` directory contains the compiled ones.
-
-2. Install [Yarn](https://classic.yarnpkg.com/en/) following the [official installation guides](https://classic.yarnpkg.com/en/docs/install).
-
-   - **Yarn** is a dependency management tool used to install and manage project packages
-   - **[Vite](https://vite.dev/guide/)** handles the frontend tooling in CTFd by building optimized assets that are served through Flask.
-
-3. Run `yarn install` in the root of `custom-theme` folder to install the necessary Node packages including `vite`.
-
-4. Run the appropriate yarn build mode:
-
-   - Run `yarn dev` (this will run `vite build --watch`) while developing the theme.
-   - Run `yarn build` (which will run `vite build`) for a one-time build.
-     Vite allows you to preview changes instantly with hot reloading.
-
-5. Now, you can start your modifications in the `assets` folder. Each time you save, Vite will automatically recompile everything (assuming you are using `yarn dev`), and you can directly see the result by importing your compiled theme into a CTFd instance.
-   Note: You do not need the `node_modules` folder, you can simply zip the theme directory without it.
-
-6. When you are ready you can use `yarn build` to build the production copy of your theme.
-
-## Todo
-
-- Document how we are using Vite
-- Create a cookie cutter template package to use with Vite
+[CTFd core-beta theme](https://github.com/CTFd/core-beta) — Bootstrap 5 + Alpine.js + Vite rewrite of the CTFd core theme.
