@@ -1,3 +1,18 @@
+# ============================================================
+# Stage 1: Build arcade theme assets (Node.js + Vite)
+# ============================================================
+FROM node:18-slim AS theme-build
+
+WORKDIR /theme
+COPY CTFd/themes/arcade/package.json CTFd/themes/arcade/yarn.lock ./
+RUN yarn install --frozen-lockfile
+COPY CTFd/themes/arcade/ ./
+RUN yarn build
+
+
+# ============================================================
+# Stage 2: Build Python dependencies
+# ============================================================
 FROM python:3.11-slim-bookworm AS build
 
 WORKDIR /opt/CTFd
@@ -25,6 +40,9 @@ RUN pip install --no-cache-dir -r requirements.txt \
     done;
 
 
+# ============================================================
+# Stage 3: Final release image
+# ============================================================
 FROM python:3.11-slim-bookworm AS release
 WORKDIR /opt/CTFd
 
@@ -33,10 +51,14 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libffi8 \
         libssl3 \
+        curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --chown=1001:1001 . /opt/CTFd
+
+# Overwrite committed theme assets with freshly built ones
+COPY --chown=1001:1001 --from=theme-build /theme/static /opt/CTFd/CTFd/themes/arcade/static
 
 RUN useradd \
     --no-log-init \

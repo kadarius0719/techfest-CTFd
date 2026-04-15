@@ -16,7 +16,6 @@ services:
     volumes:
       - .data/CTFd/logs:/var/log/CTFd
       - .data/CTFd/uploads:/var/uploads
-      - .:/opt/CTFd:ro
     depends_on:
       permissions:
         condition: service_completed_successfully
@@ -24,6 +23,28 @@ services:
         condition: service_started
       cache:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+    networks:
+        default:
+        internal:
+
+  # One-time init container: sets up admin, imports challenges, configures theme
+  init:
+    build: .
+    entrypoint: ["python3", "/opt/CTFd/scripts/docker-init.py"]
+    environment:
+      - CTFD_URL=http://ctfd:8000
+    volumes:
+      - ${CHALLENGE_REPO:-./challenges}:/challenges:ro
+    depends_on:
+      ctfd:
+        condition: service_healthy
+    restart: "no"
     networks:
         default:
         internal:

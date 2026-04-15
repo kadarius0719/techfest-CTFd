@@ -1,0 +1,12 @@
+# Development override — mounts source code for live changes
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+#
+# Or use the dev-setup.sh script which handles this automatically.
+# Requires Node.js 18+ and yarn on the host for theme rebuilds.
+services:
+  ctfd:
+    volumes:
+      - .data/CTFd/logs:/var/log/CTFd
+      - .data/CTFd/uploads:/var/uploads
+      - .:/opt/CTFd:ro
