@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="pt-5 mt-5 text-center">
+
+        <h1 class="glitch" data-text="SIGNAL LOST" style="font-size: 2.2rem; color: #ff003c; margin-bottom: 1rem;">
+          SIGNAL LOST
+        </h1>
+
+        <div style="font-family: 'VT323', monospace; font-size: 2rem; color: #ff003c; margin-bottom: 2rem; animation: error-flicker 3s infinite;">
+          ERROR::404
+        </div>
+
+        <div style="font-family: 'VT323', monospace; color: #4a4a6a; font-size: 1.4rem; max-width: 500px; margin: 0 auto; text-align: left; padding: 1.5rem; background: rgba(12,12,29,0.8); border: 1px solid #2a2a55;">
+          <span style="color: #ff003c;">&gt;</span> attempting connection...<br>
+          <span style="color: #ff003c;">&gt;</span> target node not found<br>
+          <span style="color: #ff003c;">&gt;</span> packet dropped at gateway<br>
+          <span style="color: #39ff14;">&gt;</span> rerouting to mainframe...<br>
+        </div>
+
+        <div style="margin-top: 2.5rem;">
+          <a href="{{ url_for('views.static_html', route='/') }}" class="btn btn-primary" style="padding: 0.8rem 2rem;">
+            RECONNECT
+          </a>
+        </div>
+
+        <!-- Easter Egg: 404 Warp Zone -->
+        <span style="color: transparent; font-size: 1px; user-select: all;">TECHFEST{warp_zone_not_found_but_flag_was}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes error-flicker {
+    0%, 100% { opacity: 1; }
+    92% { opacity: 1; }
+    93% { opacity: 0.3; }
+    94% { opacity: 1; }
+    96% { opacity: 0.5; }
+    97% { opacity: 1; }
+  }
+</style>
+
+{% endblock %}

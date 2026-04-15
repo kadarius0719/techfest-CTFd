@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div
+    x-data="ChallengeBoard"
+    @load-challenges.window="loadChallenges()"
+    @load-challenge.window="loadChallenge($event.detail)"
+  >
+    <!-- Challenge Modal -->
+    <div
+      x-ref="challengeWindow" id="challenge-window" class="modal fade" tabindex="-1" role="dialog" x-data=""
+      x-html="$store.challenge.data.view"
+    ></div>
+
+    <!-- Zone Header Bar (only in zone view) -->
+    <div class="zone-header-bar" x-show="view === 'zone'" x-cloak>
+      <button @click="exitZone()" class="zone-back-btn">&larr; BACK TO MAP</button>
+      <span class="zone-header-icon" :style="'color:' + getCategoryMeta(activeCategory || '').color"
+        x-text="getCategoryMeta(activeCategory || '').icon"></span>
+      <h2 class="zone-header-title" x-text="activeCategory"
+        :style="'color:' + getCategoryMeta(activeCategory || '').color"></h2>
+      <div class="zone-progress-wrap">
+        <div class="zone-progress-track">
+          <div class="zone-progress-fill" :style="'width:' + getCategoryStats(activeCategory).percent + '%'"></div>
+        </div>
+        <span class="zone-progress-label"
+          x-text="getCategoryStats(activeCategory).solved + ' / ' + getCategoryStats(activeCategory).total + ' CLEARED'"></span>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div x-show="!loaded">
+      <div class="min-vh-50 d-flex align-items-center">
+        <div class="text-center w-100">
+          <div class="cyber-loader">INITIALIZING</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- OVERWORLD — PAC-MAN MAZE (landscape)        -->
+    <!-- =========================================== -->
+    <div x-show="loaded && view === 'overworld'" x-transition.opacity.duration.300ms class="maze-section">
+      <div class="maze-viewport">
+
+        <!-- === SVG MAZE (landscape 1400x700) === -->
+        <svg class="maze-svg" viewBox="0 0 1400 700" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <filter id="mz-glow-lg">
+              <feGaussianBlur stdDeviation="6" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="pellet-glow">
+              <feGaussianBlur stdDeviation="2.5" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <!-- ~~~ OUTER BORDER ~~~ -->
+          <rect x="35" y="35" width="1330" height="630" rx="8"
+            fill="none" stroke="#0044aa" stroke-width="8" filter="url(#mz-glow-lg)" opacity="0.35"/>
+          <rect x="35" y="35" width="1330" height="630" rx="8"
+            fill="none" stroke="#00bbff" stroke-width="5" opacity="0.7"/>
+          <rect x="35" y="35" width="1330" height="630" rx="8"
+            fill="none" stroke="#00f0ff" stroke-width="2.5"/>
+          <rect x="48" y="48" width="1304" height="604" rx="6"
+            fill="none" stroke="#00bbff" stroke-width="2" opacity="0.5"/>
+
+          <!-- ~~~ MAZE CORRIDORS ~~~
+               Layout: 3x3 grid
+               Columns: x = 200, 700, 1200
+               Rows:    y = 130, 350, 570
+               Plus edge entries and alcove stubs
+          -->
+
+          <!-- Layer 1: glow -->
+          <g fill="none" stroke="#0044aa" stroke-width="48" stroke-linecap="square" filter="url(#mz-glow-lg)" opacity="0.3">
+            <path d="M200,130 L1200,130 M200,350 L1200,350 M200,570 L1200,570
+              M200,130 L200,570 M700,130 L700,570 M1200,130 L1200,570
+              M450,130 L450,350 M950,130 L950,350
+              M35,130 L200,130 M1200,130 L1365,130
+              M35,570 L200,570 M1200,570 L1365,570
+              M35,350 L200,350 M1200,350 L1365,350
+              M450,35 L450,130 M950,35 L950,130
+              M450,570 L450,665 M950,570 L950,665"/>
+          </g>
+          <!-- Layer 2: outer wall -->
+          <g fill="none" stroke="#00bbff" stroke-width="44" stroke-linecap="square" opacity="0.7">
+            <path d="M200,130 L1200,130 M200,350 L1200,350 M200,570 L1200,570
+              M200,130 L200,570 M700,130 L700,570 M1200,130 L1200,570
+              M450,130 L450,350 M950,130 L950,350
+              M35,130 L200,130 M1200,130 L1365,130
+              M35,570 L200,570 M1200,570 L1365,570
+              M35,350 L200,350 M1200,350 L1365,350
+              M450,35 L450,130 M950,35 L950,130
+              M450,570 L450,665 M950,570 L950,665"/>
+          </g>
+          <!-- Layer 3: dark interior -->
+          <g fill="none" stroke="#06060e" stroke-width="40" stroke-linecap="square">
+            <path d="M200,130 L1200,130 M200,350 L1200,350 M200,570 L1200,570
+              M200,130 L200,570 M700,130 L700,570 M1200,130 L1200,570
+              M450,130 L450,350 M950,130 L950,350
+              M35,130 L200,130 M1200,130 L1365,130
+              M35,570 L200,570 M1200,570 L1365,570
+              M35,350 L200,350 M1200,350 L1365,350
+              M450,35 L450,130 M950,35 L950,130
+              M450,570 L450,665 M950,570 L950,665"/>
+          </g>
+          <!-- Layer 4: inner wall -->
+          <g fill="none" stroke="#00ddff" stroke-width="38" stroke-linecap="square" opacity="0.35">
+            <path d="M200,130 L1200,130 M200,350 L1200,350 M200,570 L1200,570
+              M200,130 L200,570 M700,130 L700,570 M1200,130 L1200,570
+              M450,130 L450,350 M950,130 L950,350
+              M35,130 L200,130 M1200,130 L1365,130
+              M35,570 L200,570 M1200,570 L1365,570
+              M35,350 L200,350 M1200,350 L1365,350
+              M450,35 L450,130 M950,35 L950,130
+              M450,570 L450,665 M950,570 L950,665"/>
+          </g>
+          <!-- Layer 5: inner dark -->
+          <g fill="none" stroke="#06060e" stroke-width="34" stroke-linecap="square">
+            <path d="M200,130 L1200,130 M200,350 L1200,350 M200,570 L1200,570
+              M200,130 L200,570 M700,130 L700,570 M1200,130 L1200,570
+              M450,130 L450,350 M950,130 L950,350
+              M35,130 L200,130 M1200,130 L1365,130
+              M35,570 L200,570 M1200,570 L1365,570
+              M35,350 L200,350 M1200,350 L1365,350
+              M450,35 L450,130 M950,35 L950,130
+              M450,570 L450,665 M950,570 L950,665"/>
+          </g>
+
+          <!-- ~~~ GHOST HOUSE OBSTACLES (center decorations) ~~~ -->
+          <g fill="none" stroke-linecap="square">
+            <!-- Between row 1 and row 2, center area -->
+            <g stroke="#00bbff" stroke-width="44" opacity="0.7">
+              <path d="M580,210 L820,210 M580,210 L580,270 M820,210 L820,270
+                M580,430 L820,430 M580,430 L580,490 M820,430 L820,490"/>
+            </g>
+            <g stroke="#06060e" stroke-width="40">
+              <path d="M580,210 L820,210 M580,210 L580,270 M820,210 L820,270
+                M580,430 L820,430 M580,430 L580,490 M820,430 L820,490"/>
+            </g>
+            <g stroke="#00ddff" stroke-width="38" opacity="0.35">
+              <path d="M580,210 L820,210 M580,210 L580,270 M820,210 L820,270
+                M580,430 L820,430 M580,430 L580,490 M820,430 L820,490"/>
+            </g>
+            <g stroke="#06060e" stroke-width="34">
+              <path d="M580,210 L820,210 M580,210 L580,270 M820,210 L820,270
+                M580,430 L820,430 M580,430 L580,490 M820,430 L820,490"/>
+            </g>
+
+            <!-- Side alcoves -->
+            <g stroke="#00bbff" stroke-width="44" opacity="0.7">
+              <path d="M280,210 L380,210 M1020,210 L1120,210
+                M280,490 L380,490 M1020,490 L1120,490"/>
+            </g>
+            <g stroke="#06060e" stroke-width="40">
+              <path d="M280,210 L380,210 M1020,210 L1120,210
+                M280,490 L380,490 M1020,490 L1120,490"/>
+            </g>
+            <g stroke="#00ddff" stroke-width="38" opacity="0.35">
+              <path d="M280,210 L380,210 M1020,210 L1120,210
+                M280,490 L380,490 M1020,490 L1120,490"/>
+            </g>
+            <g stroke="#06060e" stroke-width="34">
+              <path d="M280,210 L380,210 M1020,210 L1120,210
+                M280,490 L380,490 M1020,490 L1120,490"/>
+            </g>
+          </g>
+
+          <!-- ~~~ SMALL PELLETS ~~~ -->
+          <g class="maze-pellets" fill="#ffa0d0" filter="url(#pellet-glow)" opacity="0.8">
+            <!-- Top horizontal (TZ to CQ) -->
+            <circle cx="300" cy="130" r="3"/><circle cx="400" cy="130" r="3"/>
+            <circle cx="500" cy="130" r="3"/><circle cx="600" cy="130" r="3"/>
+            <!-- Top horizontal (CQ to WW) -->
+            <circle cx="800" cy="130" r="3"/><circle cx="900" cy="130" r="3"/>
+            <circle cx="1000" cy="130" r="3"/><circle cx="1100" cy="130" r="3"/>
+            <!-- Middle horizontal (DD to SF) -->
+            <circle cx="300" cy="350" r="3"/><circle cx="400" cy="350" r="3"/>
+            <circle cx="500" cy="350" r="3"/><circle cx="600" cy="350" r="3"/>
+            <!-- Middle horizontal (SF to AI) -->
+            <circle cx="800" cy="350" r="3"/><circle cx="900" cy="350" r="3"/>
+            <circle cx="1000" cy="350" r="3"/><circle cx="1100" cy="350" r="3"/>
+            <!-- Bottom horizontal (PA to CB) -->
+            <circle cx="300" cy="570" r="3"/><circle cx="400" cy="570" r="3"/>
+            <circle cx="500" cy="570" r="3"/><circle cx="600" cy="570" r="3"/>
+            <!-- Bottom horizontal (CB to BS) -->
+            <circle cx="800" cy="570" r="3"/><circle cx="900" cy="570" r="3"/>
+            <circle cx="1000" cy="570" r="3"/><circle cx="1100" cy="570" r="3"/>
+            <!-- Left vertical (TZ to DD) -->
+            <circle cx="200" cy="190" r="3"/><circle cx="200" cy="240" r="3"/><circle cx="200" cy="290" r="3"/>
+            <!-- Left vertical (DD to PA) -->
+            <circle cx="200" cy="410" r="3"/><circle cx="200" cy="460" r="3"/><circle cx="200" cy="510" r="3"/>
+            <!-- Left-center vertical (J_TL to J_ML, x=450) -->
+            <circle cx="450" cy="190" r="3"/><circle cx="450" cy="240" r="3"/><circle cx="450" cy="290" r="3"/>
+            <!-- Center vertical (CQ to SF) -->
+            <circle cx="700" cy="190" r="3"/><circle cx="700" cy="240" r="3"/><circle cx="700" cy="290" r="3"/>
+            <!-- Center vertical (SF to CB) -->
+            <circle cx="700" cy="410" r="3"/><circle cx="700" cy="460" r="3"/><circle cx="700" cy="510" r="3"/>
+            <!-- Right-center vertical (J_TR to J_MR, x=950) -->
+            <circle cx="950" cy="190" r="3"/><circle cx="950" cy="240" r="3"/><circle cx="950" cy="290" r="3"/>
+            <!-- Right vertical (WW to AI) -->
+            <circle cx="1200" cy="190" r="3"/><circle cx="1200" cy="240" r="3"/><circle cx="1200" cy="290" r="3"/>
+            <!-- Right vertical (AI to BS) -->
+            <circle cx="1200" cy="410" r="3"/><circle cx="1200" cy="460" r="3"/><circle cx="1200" cy="510" r="3"/>
+            <!-- Edge entries -->
+            <circle cx="80" cy="130" r="3"/><circle cx="140" cy="130" r="3"/>
+            <circle cx="1260" cy="130" r="3"/><circle cx="1320" cy="130" r="3"/>
+            <circle cx="80" cy="570" r="3"/><circle cx="140" cy="570" r="3"/>
+            <circle cx="1260" cy="570" r="3"/><circle cx="1320" cy="570" r="3"/>
+            <!-- Side alcoves -->
+            <circle cx="75" cy="350" r="3"/><circle cx="1325" cy="350" r="3"/>
+            <!-- Top stubs -->
+            <circle cx="450" cy="70" r="3"/><circle cx="950" cy="70" r="3"/>
+            <!-- Bottom stubs -->
+            <circle cx="450" cy="630" r="3"/><circle cx="950" cy="630" r="3"/>
+          </g>
+        </svg>
+
+        <!-- === HTML OVERLAY: category labels + Pac-Man avatar === -->
+        <div class="maze-overlay">
+          <!-- Category click targets -->
+          <template x-for="cat in getCategories()" :key="cat">
+            <button class="maze-cat-btn"
+              @click="navigateToZone(cat)"
+              :style="'left:' + getCategoryPos(cat).pctX + '%;top:' + getCategoryPos(cat).pctY + '%'"
+              :class="{
+                'cat-complete': getCategoryStats(cat).percent === 100,
+                'cat-active': getCategoryStats(cat).solved > 0 && getCategoryStats(cat).percent < 100,
+                'cat-avatar-here': !isNavigating && _currentCategory === cat
+              }">
+              <span class="cat-icon" :style="'color:' + getCategoryMeta(cat).color" x-text="getCategoryMeta(cat).icon"></span>
+              <span class="cat-name" x-text="cat"></span>
+              <span class="cat-count" x-text="getCategoryStats(cat).solved + '/' + getCategoryStats(cat).total"></span>
+            </button>
+          </template>
+
+          <!-- Pac-Man Avatar -->
+          <div class="pacman-wrap"
+            :style="'left:' + avatarPctX + '%;top:' + avatarPctY + '%'"
+            :class="{ 'pac-moving': isNavigating }">
+            <div class="pacman" :class="'pac-dir-' + avatarDir">
+              <div class="pac-top"></div>
+              <div class="pac-bot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- ZONE VIEW — Split Panel Layout              -->
+    <!-- =========================================== -->
+    <div x-show="loaded && view === 'zone'" x-transition.opacity.duration.300ms class="zone-section" x-cloak>
+      <div class="zone-split" :class="{ 'panel-open': selectedChallenge }">
+
+        <!-- LEFT: Stage Timeline -->
+        <div class="zone-timeline-panel">
+          <div class="stage-timeline">
+            <template x-for="(c, idx) in getZoneChallenges()" :key="c.id">
+              <div class="timeline-stage"
+                :class="{
+                  'stage-cleared': c.solved_by_me,
+                  'stage-boss': isBoss(c),
+                  'stage-next': !c.solved_by_me && isNextStage(idx),
+                  'stage-selected': selectedChallenge === c.id
+                }">
+                <!-- Rail dot -->
+                <div class="timeline-dot">
+                  <span class="dot-icon" x-text="isBoss(c) ? '★' : (c.solved_by_me ? '✓' : (idx + 1))"></span>
+                </div>
+                <!-- Stage card -->
+                <button class="stage-card" @click="selectChallenge(c.id)">
+                  <div class="stage-card-body">
+                    <div class="stage-card-name" x-text="c.name"></div>
+                    <div class="stage-card-meta">
+                      <span class="stage-card-pts"><span x-text="c.value"></span> PTS</span>
+                      <span class="stage-card-solves" x-text="(c.solves || 0) + ' solve' + ((c.solves || 0) === 1 ? '' : 's')"></span>
+                      <template x-for="tag in (c.tags || []).filter(t => ['Easy','Medium','Hard','Expert'].includes(t.value))" :key="tag.value">
+                        <span class="stage-card-diff" :class="'diff-' + tag.value.toLowerCase()" x-text="tag.value"></span>
+                      </template>
+                    </div>
+                  </div>
+                  <div class="stage-card-status">
+                    <span class="stage-badge-cleared" x-show="c.solved_by_me">CLEARED</span>
+                    <span class="stage-badge-next" x-show="!c.solved_by_me && isNextStage(idx)">NEXT</span>
+                    <span class="stage-badge-boss" x-show="isBoss(c) && !c.solved_by_me">BOSS FIGHT</span>
+                  </div>
+                </button>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- RIGHT: Challenge Detail Panel -->
+        <div class="zone-detail-panel" x-show="selectedChallenge" x-transition:enter.duration.300ms x-transition:leave.duration.200ms>
+          <div class="detail-panel-header">
+            <span class="detail-panel-title">MISSION BRIEFING</span>
+            <button @click="closePanel()" class="detail-panel-close">&times;</button>
+          </div>
+          <div class="detail-panel-body"
+            x-html="$store.challenge.data.view">
+          </div>
+          <!-- CRT scanline overlay -->
+          <div class="detail-panel-scanlines"></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ Assets.js("assets/js/challenges.js") }}
+{% endblock %}

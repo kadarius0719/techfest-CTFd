@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ title or Configs.ctf_name }}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="{{ Configs.ctf_small_icon }}" type="image/x-icon">
+
+  {{ meta | safe }}
+
+  {% block stylesheets %}
+    {{ Assets.css("assets/scss/main.scss") }}
+  {% endblock %}
+
+  {{ Plugins.styles }}
+
+  {{ Assets.js("assets/js/color_mode_switcher.js", type=None) }}
+
+  <script type="text/javascript">
+      window.init = {
+          'urlRoot': "{{ request.script_root }}",
+          'csrfNonce': "{{ Session.nonce }}",
+          'userMode': "{{ Configs.user_mode }}",
+          'userId': {{ Session.id }},
+          'userName': {{ User.name | tojson }},
+          'userEmail': {{ User.email | tojson }},
+          'userVerified': {{ User.verified | tojson }},
+          'teamId': {{ Team.id | tojson }},
+          'teamName': {{ Team.name | tojson }},
+          'start': {{ Configs.start | tojson }},
+          'end': {{ Configs.end | tojson }},
+          'themeSettings': {{ Configs.theme_settings | tojson }},
+          'eventSounds': [
+            "/themes/arcade/static/sounds/notification.webm",
+            "/themes/arcade/static/sounds/notification.mp3",
+          ],
+      }
+  </script>
+
+  <!-- Easter Egg: Console Cowboy -->
+  <script type="text/javascript">
+    console.log("%c" +
+      " ╔══════════════════════════════════════════════════╗\n" +
+      " ║  ████████╗███████╗ ██████╗██╗  ██╗███████╗██╗   ║\n" +
+      " ║  ╚══██╔══╝██╔════╝██╔════╝██║  ██║██╔════╝██║   ║\n" +
+      " ║     ██║   █████╗  ██║     ███████║█████╗  ██║   ║\n" +
+      " ║     ██║   ██╔══╝  ██║     ██╔══██║██╔══╝  ╚═╝   ║\n" +
+      " ║     ██║   ███████╗╚██████╗██║  ██║██║     ██╗   ║\n" +
+      " ║     ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝     ╚═╝   ║\n" +
+      " ║          C Y B E R P U N K   A R C A D E          ║\n" +
+      " ║                 CTF 2026 EDITION                   ║\n" +
+      " ╚══════════════════════════════════════════════════╝\n",
+      "color: #00f0ff; font-family: monospace; font-size: 10px; text-shadow: 0 0 10px #00f0ff;"
+    );
+    console.log("%c  > SYSTEM INITIALIZED", "color: #39ff14; font-family: monospace; font-size: 11px;");
+    console.log("%c  > NEURAL LINK ESTABLISHED", "color: #e100ff; font-family: monospace; font-size: 11px;");
+    console.log("%c  > INSERT COIN TO CONTINUE...", "color: #ff6b35; font-family: monospace; font-size: 11px;");
+    console.log("%c  TECHFEST{the_console_is_a_hackers_playground}", "color: #39ff14; font-size: 1px;");
+  </script>
+
+  <!-- Easter Egg: Cookie Monster -->
+  <script type="text/javascript">
+    if (!document.cookie.includes('arcade_token')) {
+      document.cookie = "arcade_token=" + btoa("TECHFEST{cookies_are_not_just_for_eating}") + "; path=/; SameSite=Lax";
+    }
+  </script>
+
+  {{ Configs.theme_header }}
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- ANIMATED DATA RAIN CANVAS (behind everything)                -->
+<!-- ============================================================ -->
+<canvas id="cyber-rain" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.4;"></canvas>
+
+<!-- HORIZONTAL SCAN LINE that sweeps periodically -->
+<div id="scan-line" style="position:fixed;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg, transparent, rgba(0,240,255,0.15), rgba(225,0,255,0.1), transparent);z-index:2;pointer-events:none;box-shadow:0 0 15px rgba(0,240,255,0.2);"></div>
+
+<script type="text/javascript">
+// --- Data Rain (performance-optimized) ---
+(function() {
+  var c = document.getElementById('cyber-rain');
+  var ctx = c.getContext('2d');
+  var w, h, columns, drops, spacing;
+
+  function resize() {
+    w = c.width = window.innerWidth;
+    h = c.height = window.innerHeight;
+    // ~40 columns spread evenly across full width
+    columns = 40;
+    spacing = w / columns;
+    drops = [];
+    for (var i = 0; i < columns; i++) {
+      drops[i] = Math.random() * -50;
+    }
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  var chars = 'TECHFEST2026techfest{}[]:<>01';
+  var fontSize = 15;
+  var colors = ['#00f0ff', '#e100ff', '#39ff14', '#7b2fff'];
+  var frame = 0;
+
+  function draw() {
+    frame++;
+    // Only draw every 2nd frame for performance
+    if (frame % 2 !== 0) { requestAnimationFrame(draw); return; }
+
+    ctx.fillStyle = 'rgba(6, 6, 14, 0.06)';
+    ctx.fillRect(0, 0, w, h);
+    ctx.font = fontSize + 'px monospace';
+
+    for (var i = 0; i < columns; i++) {
+      var x = i * spacing + spacing * 0.5; // Center each column in its slot
+      var y = drops[i] * fontSize;
+
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.globalAlpha = 0.15 + Math.random() * 0.25;
+      var char = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(char, x, y);
+
+      if (y > h && Math.random() > 0.98) {
+        drops[i] = 0;
+      }
+      drops[i] += 0.25 + Math.random() * 0.15;
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// --- Scan Line Sweep ---
+(function() {
+  var line = document.getElementById('scan-line');
+  function sweep() {
+    line.style.transition = 'none';
+    line.style.top = '-3px';
+    setTimeout(function() {
+      line.style.transition = 'top 3s cubic-bezier(0.4, 0, 0.2, 1)';
+      line.style.top = '100vh';
+    }, 50);
+  }
+  sweep();
+  setInterval(sweep, 6000);
+})();
+</script>
+
+{% include "components/navbar.html" %}
+
+<main role="main">
+  {% block content %}
+  {% endblock %}
+</main>
+
+{% include "components/snackbar.html" %}
+
+<footer class="footer">
+  <div class="container text-center">
+    <small class="text-muted">
+      TechFest 2026 // Cyberpunk Arcade Edition
+    </small>
+  </div>
+</footer>
+
+{% include "components/notifications.html" %}
+
+<!-- Easter Egg: View Source Veteran -->
+<!-- Congratulations, you found a hidden flag! TECHFEST{you_found_the_hidden_html_comment} -->
+
+<!-- Easter Egg: Konami Code Listener -->
+<script type="text/javascript">
+(function() {
+  var konami = [38,38,40,40,37,39,37,39,66,65];
+  var pos = 0;
+  document.addEventListener('keydown', function(e) {
+    if (e.keyCode === konami[pos]) {
+      pos++;
+      if (pos === konami.length) {
+        pos = 0;
+        console.log("%c KONAMI CODE ACTIVATED! ", "background: #ff00ff; color: #fff; font-family: 'Press Start 2P'; font-size: 16px; padding: 10px;");
+        console.log("%c TECHFEST{up_up_down_down_left_right_left_right_b_a}", "color: #39ff14; font-family: monospace; font-size: 14px;");
+        // Screen flash effect
+        var flash = document.createElement('div');
+        flash.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;pointer-events:none;background:#fff;';
+        document.body.appendChild(flash);
+        setTimeout(function() { flash.style.transition='opacity 0.5s'; flash.style.opacity='0'; }, 50);
+        setTimeout(function() { flash.remove(); }, 600);
+        // Overlay
+        var overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(6,6,14,0.95);z-index:99998;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;backdrop-filter:blur(5px);';
+        overlay.innerHTML = '<p style="font-family:Orbitron,sans-serif;color:#e100ff;font-size:2rem;text-shadow:0 0 30px #e100ff,0 0 60px rgba(225,0,255,0.3);margin-bottom:1rem;letter-spacing:5px;animation:pulse 1s ease-in-out infinite alternate;">KONAMI CODE</p><p style="font-family:Orbitron,sans-serif;color:#39ff14;font-size:1rem;text-shadow:0 0 15px #39ff14;letter-spacing:3px;">+30 LIVES UNLOCKED</p><p style="font-family:VT323,monospace;color:#00f0ff;font-size:1.4rem;margin-top:2rem;">Check your console for a reward...</p><p style="font-family:VT323,monospace;color:#4a4a6a;font-size:1rem;margin-top:2rem;">Click anywhere to dismiss</p>';
+        overlay.onclick = function() { overlay.style.transition='opacity 0.3s'; overlay.style.opacity='0'; setTimeout(function(){overlay.remove();},300); };
+        document.body.appendChild(overlay);
+      }
+    } else { pos = 0; }
+  });
+})();
+</script>
+
+<!-- Typing animation helper for elements with class 'typewriter' -->
+<script type="text/javascript">
+(function() {
+  document.querySelectorAll('.typewriter').forEach(function(el) {
+    var text = el.textContent;
+    el.textContent = '';
+    el.style.borderRight = '2px solid #00f0ff';
+    var i = 0;
+    function type() {
+      if (i < text.length) {
+        el.textContent += text[i];
+        i++;
+        setTimeout(type, 40 + Math.random() * 40);
+      } else {
+        // Blinking cursor
+        setInterval(function() {
+          el.style.borderRightColor = el.style.borderRightColor === 'transparent' ? '#00f0ff' : 'transparent';
+        }, 500);
+      }
+    }
+    setTimeout(type, 500);
+  });
+})();
+</script>
+
+{% block scripts %}
+  {{ Assets.js("assets/js/page.js") }}
+{% endblock %}
+
+{{ Plugins.scripts }}
+
+{{ Configs.theme_footer }}
+</body>
+</html>

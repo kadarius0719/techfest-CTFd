@@ -1,0 +1,1963 @@
+// ================================================================
+// TechFest CTF 2026 — CYBERPUNK ARCADE THEME
+// ================================================================
+
+@use "bootstrap/scss/bootstrap" as * with (
+  $primary: #e100ff,
+  $secondary: #00f0ff,
+  $success: #39ff14,
+  $info: #ff6b35,
+  $warning: #ffe66d,
+  $danger: #ff003c,
+  $dark: #06060e,
+  $light: #12122a,
+  $body-bg: #06060e,
+  $body-color: #d4d4e8,
+  $body-bg-dark: #030308,
+  $body-color-dark: #d4d4e8,
+  $link-color: #00f0ff,
+  $link-hover-color: #e100ff,
+  $border-radius: 0px,
+  $border-radius-sm: 0px,
+  $border-radius-lg: 0px,
+  $card-border-radius: 0px,
+  $btn-border-radius: 0px,
+  $btn-border-radius-sm: 0px,
+  $btn-border-radius-lg: 0px,
+  $input-border-radius: 0px,
+  $input-border-radius-sm: 0px,
+  $input-border-radius-lg: 0px,
+  $font-family-sans-serif: ("VT323", "Courier New", monospace),
+  $font-family-monospace: ("VT323", "Courier New", monospace)
+);
+
+@use "includes/components/table";
+@use "includes/components/jumbotron";
+@use "includes/components/challenge";
+@use "includes/components/sticky-footer";
+@use "includes/components/graphs";
+@use "includes/utils/fonts";
+@use "includes/utils/opacity";
+@use "includes/utils/min-height";
+@use "includes/utils/cursors";
+@use "includes/utils/lolight";
+@use "includes/icons/award-icons";
+@use "includes/icons/flag-icons";
+
+// ================================================================
+// FONTS
+// ================================================================
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Orbitron:wght@400;700;900&display=swap');
+
+// ================================================================
+// CYBERPUNK VARIABLES
+// ================================================================
+$cyber-bg:       #06060e;
+$cyber-panel:    #0c0c1d;
+$cyber-surface:  #12122a;
+$cyber-border:   #2a2a55;
+$cyber-pink:     #e100ff;
+$cyber-cyan:     #00f0ff;
+$cyber-green:    #39ff14;
+$cyber-orange:   #ff6b35;
+$cyber-yellow:   #ffe66d;
+$cyber-red:      #ff003c;
+$cyber-purple:   #7b2fff;
+$cyber-blue:     #0055ff;
+$cyber-text:     #d4d4e8;
+$cyber-muted:    #4a4a6a;
+
+// ================================================================
+// ANIMATED GRID BACKGROUND
+// ================================================================
+body {
+  background-color: $cyber-bg;
+  background-image:
+    linear-gradient(rgba($cyber-cyan, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba($cyber-cyan, 0.03) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 0%, rgba($cyber-purple, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba($cyber-pink, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 80%, rgba($cyber-blue, 0.08) 0%, transparent 50%);
+  background-size:
+    60px 60px,
+    60px 60px,
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+// CRT scanlines + vignette
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.04) 0px,
+      rgba(0, 0, 0, 0.04) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.4) 100%);
+}
+
+// Ambient floating particles (CSS only)
+body::after {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba($cyber-cyan, 0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 60%, rgba($cyber-pink, 0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 10%, rgba($cyber-cyan, 0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 40%, rgba($cyber-purple, 0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 80%, rgba($cyber-cyan, 0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 20% 90%, rgba($cyber-pink, 0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 70%, rgba($cyber-green, 0.2) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 15%, rgba($cyber-purple, 0.3) 0%, transparent 100%);
+  animation: particle-drift 20s ease-in-out infinite alternate;
+}
+
+@keyframes particle-drift {
+  0%   { transform: translateY(0) translateX(0); }
+  100% { transform: translateY(-30px) translateX(15px); }
+}
+
+// ================================================================
+// TYPOGRAPHY
+// ================================================================
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Orbitron", "Press Start 2P", sans-serif !important;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+h1 { font-size: 1.8rem; line-height: 1.6; }
+h2 { font-size: 1.4rem; line-height: 1.5; }
+h3 { font-size: 1.1rem; line-height: 1.4; }
+
+a {
+  text-decoration: none !important;
+  transition: all 0.3s ease;
+  &:hover {
+    text-shadow: 0 0 8px $cyber-cyan, 0 0 16px rgba($cyber-cyan, 0.3);
+  }
+}
+
+blockquote {
+  border-left: 4px solid $cyber-pink;
+  padding-left: 15px;
+}
+
+input, select, textarea {
+  padding: 0.6rem !important;
+  height: auto !important;
+  background-color: $cyber-panel !important;
+  border: 2px solid $cyber-border !important;
+  color: $cyber-text !important;
+  font-family: "VT323", monospace !important;
+  font-size: 1.2rem !important;
+  transition: all 0.3s ease;
+  &:focus {
+    border-color: $cyber-cyan !important;
+    box-shadow: 0 0 15px rgba($cyber-cyan, 0.3), inset 0 0 15px rgba($cyber-cyan, 0.05) !important;
+  }
+}
+
+// ================================================================
+// GLITCH TEXT EFFECT
+// ================================================================
+.glitch {
+  position: relative;
+  display: inline-block;
+
+  &::before, &::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    overflow: hidden;
+  }
+
+  &::before {
+    color: $cyber-cyan;
+    z-index: -1;
+    animation: glitch-shift-1 3s infinite linear alternate-reverse;
+    clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+  }
+
+  &::after {
+    color: $cyber-pink;
+    z-index: -1;
+    animation: glitch-shift-2 2.5s infinite linear alternate-reverse;
+    clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+  }
+}
+
+@keyframes glitch-shift-1 {
+  0%, 90%, 100% { transform: translateX(0); }
+  92% { transform: translateX(-3px); }
+  94% { transform: translateX(3px); }
+  96% { transform: translateX(-2px); }
+  98% { transform: translateX(1px); }
+}
+
+@keyframes glitch-shift-2 {
+  0%, 88%, 100% { transform: translateX(0); }
+  90% { transform: translateX(4px); }
+  93% { transform: translateX(-3px); }
+  95% { transform: translateX(2px); }
+  97% { transform: translateX(-4px); }
+}
+
+// Subtle glitch on all jumbotron headings
+.jumbotron h1 {
+  animation: heading-glitch 8s infinite;
+}
+
+@keyframes heading-glitch {
+  0%, 95%, 100% {
+    text-shadow: 0 0 20px $cyber-cyan, 0 0 40px $cyber-cyan;
+  }
+  96% {
+    text-shadow: -3px 0 $cyber-pink, 3px 0 $cyber-cyan, 0 0 20px $cyber-cyan;
+  }
+  97% {
+    text-shadow: 3px 0 $cyber-pink, -2px 0 $cyber-cyan, 0 0 20px $cyber-cyan;
+  }
+  98% {
+    text-shadow: -2px 0 $cyber-pink, 2px 0 $cyber-cyan, 0 0 30px $cyber-cyan;
+  }
+}
+
+// ================================================================
+// NEON GLOW UTILITIES
+// ================================================================
+.glow-pink   { text-shadow: 0 0 10px $cyber-pink, 0 0 30px $cyber-pink, 0 0 60px rgba($cyber-pink, 0.3); }
+.glow-cyan   { text-shadow: 0 0 10px $cyber-cyan, 0 0 30px $cyber-cyan, 0 0 60px rgba($cyber-cyan, 0.3); }
+.glow-green  { text-shadow: 0 0 10px $cyber-green, 0 0 30px $cyber-green, 0 0 60px rgba($cyber-green, 0.3); }
+.glow-orange { text-shadow: 0 0 10px $cyber-orange, 0 0 30px $cyber-orange, 0 0 60px rgba($cyber-orange, 0.3); }
+
+// Breathing neon border
+.neon-border {
+  border: 2px solid $cyber-cyan;
+  animation: neon-breathe-cyan 4s ease-in-out infinite;
+}
+
+.neon-border-pink {
+  border: 2px solid $cyber-pink;
+  animation: neon-breathe-pink 4s ease-in-out infinite;
+}
+
+@keyframes neon-breathe-cyan {
+  0%, 100% { box-shadow: 0 0 8px rgba($cyber-cyan, 0.2), inset 0 0 8px rgba($cyber-cyan, 0.05); }
+  50%      { box-shadow: 0 0 20px rgba($cyber-cyan, 0.4), inset 0 0 20px rgba($cyber-cyan, 0.1); }
+}
+
+@keyframes neon-breathe-pink {
+  0%, 100% { box-shadow: 0 0 8px rgba($cyber-pink, 0.2), inset 0 0 8px rgba($cyber-pink, 0.05); }
+  50%      { box-shadow: 0 0 20px rgba($cyber-pink, 0.4), inset 0 0 20px rgba($cyber-pink, 0.1); }
+}
+
+// ================================================================
+// NAVBAR — Cyberpunk Glass
+// ================================================================
+.navbar {
+  background: linear-gradient(180deg, rgba($cyber-bg, 0.95) 0%, rgba($cyber-panel, 0.9) 100%) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid $cyber-pink;
+  box-shadow: 0 2px 30px rgba($cyber-pink, 0.25), 0 1px 0 rgba($cyber-pink, 0.5);
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+
+  .navbar-brand {
+    font-family: "Orbitron", sans-serif;
+    font-weight: 900;
+    color: $cyber-cyan !important;
+    text-shadow: 0 0 15px $cyber-cyan, 0 0 30px rgba($cyber-cyan, 0.3);
+    font-size: 0.9rem;
+    letter-spacing: 3px;
+    transition: text-shadow 0.3s;
+    &:hover {
+      text-shadow: 0 0 20px $cyber-cyan, 0 0 40px $cyber-cyan, 0 0 60px rgba($cyber-cyan, 0.5);
+    }
+  }
+
+  .nav-link {
+    color: rgba($cyber-text, 0.8) !important;
+    transition: all 0.3s ease;
+    padding: 0.5rem 0.75rem;
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: 0; left: 50%;
+      width: 0; height: 2px;
+      background: $cyber-pink;
+      box-shadow: 0 0 8px $cyber-pink;
+      transition: all 0.3s ease;
+      transform: translateX(-50%);
+    }
+
+    &:hover {
+      color: #fff !important;
+      text-shadow: 0 0 8px $cyber-pink;
+      &::after { width: 80%; }
+    }
+  }
+}
+
+// ================================================================
+// JUMBOTRON — Cyberpunk Header
+// ================================================================
+.jumbotron {
+  background: linear-gradient(180deg, $cyber-surface 0%, $cyber-bg 100%) !important;
+  border-bottom: 2px solid $cyber-cyan;
+  box-shadow: 0 4px 40px rgba($cyber-cyan, 0.15);
+  position: relative;
+  overflow: hidden;
+
+  h1 {
+    color: $cyber-cyan;
+    position: relative;
+    z-index: 2;
+  }
+
+  // Animated perspective grid
+  &::before {
+    content: "";
+    position: absolute;
+    bottom: 0; left: -50%;
+    width: 200%; height: 200%;
+    background-image:
+      linear-gradient(rgba($cyber-cyan, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba($cyber-cyan, 0.06) 1px, transparent 1px);
+    background-size: 50px 50px;
+    transform: perspective(300px) rotateX(60deg);
+    transform-origin: bottom center;
+    animation: grid-scroll 15s linear infinite;
+    pointer-events: none;
+  }
+
+  // Side accent lines
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0; right: 0;
+    width: 40%; height: 100%;
+    background: linear-gradient(135deg, transparent 0%, rgba($cyber-pink, 0.03) 50%, transparent 100%);
+    pointer-events: none;
+  }
+}
+
+@keyframes grid-scroll {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 50px; }
+}
+
+// ================================================================
+// BUTTONS — Cyberpunk Neon
+// ================================================================
+.btn-primary {
+  background: linear-gradient(135deg, $cyber-pink, darken($cyber-pink, 15%)) !important;
+  border: 2px solid $cyber-pink !important;
+  color: #fff !important;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: rotate(45deg) translateY(-100%);
+    transition: transform 0.5s;
+  }
+
+  &:hover {
+    box-shadow: 0 0 25px rgba($cyber-pink, 0.5), 0 0 50px rgba($cyber-pink, 0.2);
+    transform: translateY(-1px);
+    &::before { transform: rotate(45deg) translateY(100%); }
+  }
+}
+
+.btn-secondary {
+  background: transparent !important;
+  border: 2px solid $cyber-cyan !important;
+  color: $cyber-cyan !important;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba($cyber-cyan, 0.1) !important;
+    box-shadow: 0 0 25px rgba($cyber-cyan, 0.3), inset 0 0 25px rgba($cyber-cyan, 0.1);
+    transform: translateY(-1px);
+  }
+}
+
+// ================================================================
+// CHALLENGE BOARD — Cyberpunk Cards
+// ================================================================
+.challenge-button {
+  background: linear-gradient(145deg, $cyber-panel, $cyber-surface) !important;
+  border: 1px solid $cyber-border !important;
+  border-left: 3px solid transparent !important;
+  color: $cyber-text !important;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  position: relative;
+
+  &:hover {
+    border-color: $cyber-cyan !important;
+    border-left-color: $cyber-cyan !important;
+    box-shadow: 0 0 15px rgba($cyber-cyan, 0.15);
+    transform: translateY(-3px);
+    color: #fff !important;
+  }
+
+  &.challenge-solved {
+    background: linear-gradient(145deg, rgba($cyber-green, 0.08), rgba($cyber-green, 0.03)) !important;
+    border-color: rgba($cyber-green, 0.4) !important;
+    border-left-color: $cyber-green !important;
+
+    &:hover {
+      box-shadow: 0 0 20px rgba($cyber-green, 0.2);
+    }
+
+    &::after {
+      content: "CLEARED";
+      position: absolute;
+      top: 8px; right: 8px;
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.45rem;
+      font-weight: 900;
+      color: $cyber-green;
+      text-shadow: 0 0 8px $cyber-green;
+      letter-spacing: 2px;
+    }
+  }
+
+  .challenge-inner {
+    position: relative;
+    z-index: 1;
+
+    p {
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.6rem;
+      font-weight: 700;
+      line-height: 1.8;
+      margin-bottom: 0.5rem;
+      letter-spacing: 1px;
+    }
+
+    span {
+      font-family: "VT323", monospace;
+      font-size: 1.6rem;
+      color: $cyber-orange;
+      text-shadow: 0 0 8px rgba($cyber-orange, 0.5);
+
+      &::after {
+        content: " PTS";
+        font-size: 0.9rem;
+        opacity: 0.6;
+        letter-spacing: 2px;
+      }
+    }
+  }
+}
+
+// BOSS CHALLENGE — Threat Level Maximum
+.challenge-button.tag-boss {
+  border: 2px solid $cyber-red !important;
+  background: linear-gradient(145deg, $cyber-panel, rgba($cyber-red, 0.08)) !important;
+  animation: boss-threat 3s ease-in-out infinite;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(45deg, transparent, rgba($cyber-red, 0.05), transparent);
+    animation: boss-scan 2s linear infinite;
+  }
+
+  &::after {
+    content: "BOSS FIGHT";
+    position: absolute;
+    top: 8px; left: 8px;
+    font-family: "Orbitron", sans-serif;
+    font-size: 0.4rem;
+    font-weight: 900;
+    color: $cyber-red;
+    text-shadow: 0 0 8px $cyber-red;
+    letter-spacing: 3px;
+    animation: boss-label-pulse 1.5s ease-in-out infinite alternate;
+  }
+
+  &:hover {
+    border-color: $cyber-red !important;
+    box-shadow: 0 0 30px rgba($cyber-red, 0.4), 0 0 60px rgba($cyber-red, 0.15), 0 8px 25px rgba(0, 0, 0, 0.3);
+    transform: translateY(-4px) scale(1.03);
+  }
+}
+
+@keyframes boss-threat {
+  0%, 100% { box-shadow: 0 0 10px rgba($cyber-red, 0.15), inset 0 0 20px rgba($cyber-red, 0.02); }
+  50%      { box-shadow: 0 0 25px rgba($cyber-red, 0.3), inset 0 0 30px rgba($cyber-red, 0.05); }
+}
+
+@keyframes boss-scan {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes boss-label-pulse {
+  from { opacity: 0.7; }
+  to   { opacity: 1; text-shadow: 0 0 12px $cyber-red, 0 0 24px rgba($cyber-red, 0.5); }
+}
+
+// Category headers
+.category-header h3 {
+  color: $cyber-pink;
+  text-shadow: 0 0 15px rgba($cyber-pink, 0.4);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid $cyber-border;
+  position: relative;
+
+  &::before {
+    content: "// ";
+    color: $cyber-cyan;
+    opacity: 0.6;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -1px; left: 0;
+    width: 60px; height: 2px;
+    background: $cyber-pink;
+    box-shadow: 0 0 10px $cyber-pink;
+  }
+}
+
+// ================================================================
+// SCOREBOARD — Cyberpunk Leaderboard
+// ================================================================
+.table {
+  font-family: "VT323", monospace;
+  font-size: 1.3rem;
+  border-color: $cyber-border;
+
+  thead {
+    font-family: "Orbitron", sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: $cyber-cyan;
+    letter-spacing: 2px;
+    border-bottom: 2px solid $cyber-cyan;
+    th {
+      border: none;
+      padding: 1rem 0.75rem;
+      text-shadow: 0 0 8px rgba($cyber-cyan, 0.4);
+    }
+  }
+
+  tbody tr {
+    border-color: rgba($cyber-border, 0.3);
+    transition: all 0.3s ease;
+    &:hover {
+      background-color: rgba($cyber-cyan, 0.04) !important;
+      box-shadow: inset 3px 0 0 $cyber-cyan;
+    }
+    // Gold / Silver / Bronze with glow
+    &:nth-child(1) th {
+      color: $cyber-yellow;
+      text-shadow: 0 0 15px rgba($cyber-yellow, 0.6);
+      font-size: 1.5rem;
+    }
+    &:nth-child(2) th {
+      color: #c0c0c0;
+      text-shadow: 0 0 10px rgba(192, 192, 192, 0.5);
+    }
+    &:nth-child(3) th {
+      color: #cd7f32;
+      text-shadow: 0 0 10px rgba(205, 127, 50, 0.5);
+    }
+  }
+}
+
+// ================================================================
+// MODALS — Cyberpunk Panels
+// ================================================================
+.modal-content {
+  background: linear-gradient(180deg, $cyber-surface, $cyber-panel) !important;
+  border: 1px solid $cyber-border !important;
+  box-shadow:
+    0 0 40px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba($cyber-cyan, 0.08),
+    inset 0 1px 0 rgba($cyber-cyan, 0.1);
+  color: $cyber-text;
+}
+
+.modal-header {
+  border-bottom: 1px solid $cyber-border;
+  background: rgba($cyber-bg, 0.5);
+}
+
+.modal-footer {
+  border-top: 1px solid $cyber-border;
+  background: rgba($cyber-bg, 0.5);
+}
+
+.card {
+  background: linear-gradient(145deg, $cyber-panel, $cyber-surface) !important;
+  border: 1px solid $cyber-border !important;
+  transition: box-shadow 0.3s ease;
+  &:hover {
+    box-shadow: 0 0 15px rgba($cyber-cyan, 0.1);
+  }
+}
+
+// ================================================================
+// FOOTER
+// ================================================================
+.footer {
+  background: $cyber-bg;
+  border-top: 1px solid $cyber-border;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent, $cyber-pink, transparent);
+    opacity: 0.3;
+  }
+
+  .text-muted {
+    font-family: "Orbitron", sans-serif;
+    font-size: 0.5rem;
+    color: $cyber-muted !important;
+    letter-spacing: 2px;
+  }
+}
+
+// ================================================================
+// LOADING ANIMATION
+// ================================================================
+.cyber-loader {
+  display: inline-block;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.8rem;
+  color: $cyber-cyan;
+  letter-spacing: 3px;
+  animation: loader-pulse 1.5s ease-in-out infinite;
+
+  &::after {
+    content: "...";
+    animation: loader-dots 1.5s steps(3, end) infinite;
+  }
+}
+
+@keyframes loader-pulse {
+  0%, 100% { opacity: 1; text-shadow: 0 0 10px $cyber-cyan; }
+  50%      { opacity: 0.5; text-shadow: 0 0 20px $cyber-cyan; }
+}
+
+@keyframes loader-dots {
+  0%   { content: ""; }
+  33%  { content: "."; }
+  66%  { content: ".."; }
+  100% { content: "..."; }
+}
+
+// ================================================================
+// MISC
+// ================================================================
+.badge {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.5rem;
+  font-weight: 700;
+  border-radius: 0;
+  letter-spacing: 1px;
+}
+
+.fa-spin.spinner {
+  text-align: center;
+  color: $cyber-cyan;
+  filter: drop-shadow(0 0 8px $cyber-cyan);
+}
+
+.badge-notification {
+  vertical-align: top;
+  margin-left: -1.5em;
+  font-size: 50%;
+}
+
+.form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%2300f0ff' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e");
+  background-size: 8px 10px;
+}
+
+// Cyberpunk scrollbar
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: $cyber-bg; }
+::-webkit-scrollbar-thumb {
+  background: $cyber-border;
+  &:hover { background: $cyber-cyan; box-shadow: 0 0 8px $cyber-cyan; }
+}
+
+::selection { background: $cyber-pink; color: #fff; }
+
+// Nav pills (scoreboard brackets)
+.nav-pills .nav-link {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: $cyber-muted;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+
+  &:hover {
+    color: $cyber-cyan;
+    border-color: $cyber-border;
+  }
+
+  &.active {
+    background: rgba($cyber-cyan, 0.1) !important;
+    color: $cyber-cyan !important;
+    border-color: $cyber-cyan;
+    box-shadow: 0 0 10px rgba($cyber-cyan, 0.2);
+  }
+}
+
+// Dropdown menus
+.dropdown-menu {
+  background-color: $cyber-panel !important;
+  border: 1px solid $cyber-border !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+
+  .dropdown-item {
+    color: $cyber-text !important;
+    transition: all 0.2s ease;
+    &:hover {
+      background-color: rgba($cyber-cyan, 0.1) !important;
+      color: $cyber-cyan !important;
+    }
+  }
+}
+
+// Alerts / toasts
+.alert {
+  border-radius: 0;
+  border: 1px solid $cyber-border;
+  background: $cyber-panel;
+  font-family: "VT323", monospace;
+  font-size: 1.2rem;
+}
+
+// Horizontal rules
+hr {
+  border-color: $cyber-border;
+  opacity: 0.3;
+}
+
+// Alpine cloak
+[x-cloak] { display: none !important; }
+
+// ================================================================
+// PAC-MAN MAZE — Overworld Map (landscape, full-viewport)
+// ================================================================
+.maze-section {
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.maze-viewport {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 56px);
+  max-width: none;
+  margin: 0;
+}
+
+.maze-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+// HTML overlay for interactive elements
+.maze-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+
+// ~~~ Category buttons (positioned via inline style %) ~~~
+.maze-cat-btn {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  pointer-events: auto;
+  padding: 0.3rem 0.5rem;
+  transition: transform 0.25s ease, filter 0.25s ease, opacity 0.5s ease;
+  z-index: 2;
+
+  &:hover {
+    transform: translate(-50%, -50%) scale(1.18);
+    .cat-name { color: #fff; text-shadow: 0 0 8px rgba(#fff, 0.5); }
+  }
+
+  &:focus { outline: none; }
+}
+
+.cat-icon {
+  font-size: 2.2rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 0 20px currentColor);
+  transition: transform 0.25s, filter 0.25s;
+
+  .maze-cat-btn:hover & { transform: scale(1.3); filter: drop-shadow(0 0 14px currentColor) drop-shadow(0 0 28px currentColor); }
+}
+
+.cat-name {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 0.3rem;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.5);
+  transition: color 0.25s, text-shadow 0.25s;
+  white-space: nowrap;
+}
+
+.cat-count {
+  font-family: "VT323", monospace;
+  font-size: 1.2rem;
+  color: $cyber-muted;
+  margin-top: 0.15rem;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+}
+
+// Category states
+.cat-complete {
+  .cat-name { color: $cyber-green; text-shadow: 0 0 10px rgba($cyber-green, 0.5); }
+  .cat-count { color: $cyber-green; }
+  .cat-icon { animation: cat-complete-pulse 2s ease-in-out infinite; }
+}
+
+.cat-active {
+  .cat-name { color: $cyber-cyan; }
+}
+
+// Avatar sitting on this node — fade it out
+.cat-avatar-here {
+  opacity: 0.25;
+  transform: translate(-50%, -50%) scale(0.9);
+  &::before, &::after { opacity: 0.05; }
+}
+
+@keyframes cat-complete-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px currentColor); }
+  50%      { filter: drop-shadow(0 0 16px currentColor) drop-shadow(0 0 24px currentColor); }
+}
+
+// ~~~ Power pellet glow behind category buttons ~~~
+.maze-cat-btn::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: currentColor;
+  opacity: 0.15;
+  filter: blur(8px);
+  animation: power-pulse-anim 2s ease-in-out infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.maze-cat-btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: currentColor;
+  opacity: 0.3;
+  filter: blur(4px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes power-pulse-anim {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.15; }
+  50%      { transform: translate(-50%, -50%) scale(1.5); opacity: 0.3; }
+}
+
+// ~~~ Small pellet glow animation ~~~
+.maze-pellets {
+  animation: pellet-twinkle 3s ease-in-out infinite alternate;
+}
+
+@keyframes pellet-twinkle {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 0.9; }
+}
+
+// ~~~ Pac-Man Avatar ~~~
+.pacman-wrap {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+  z-index: 10;
+  transition: left 0.05s linear, top 0.05s linear;
+  filter: drop-shadow(0 0 8px #ffe66d) drop-shadow(0 0 16px rgba(#ffe66d, 0.4));
+}
+
+.pacman {
+  width: 28px;
+  height: 28px;
+  position: relative;
+}
+
+.pac-top, .pac-bot {
+  position: absolute;
+  left: 0;
+  width: 28px;
+  height: 14px;
+  background: #ffe66d;
+  transition: transform 0.1s;
+}
+
+.pac-top {
+  top: 0;
+  border-radius: 14px 14px 0 0;
+  transform-origin: bottom center;
+
+  // Eye
+  &::after {
+    content: "";
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: $cyber-bg;
+    border-radius: 50%;
+    top: 3px;
+    right: 8px;
+    z-index: 1;
+  }
+}
+
+.pac-bot {
+  bottom: 0;
+  border-radius: 0 0 14px 14px;
+  transform-origin: top center;
+}
+
+// Chomp animation when moving
+.pac-moving {
+  .pac-top { animation: pac-chomp-top 0.2s ease-in-out infinite alternate; }
+  .pac-bot { animation: pac-chomp-bot 0.2s ease-in-out infinite alternate; }
+}
+
+@keyframes pac-chomp-top {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(-30deg); }
+}
+
+@keyframes pac-chomp-bot {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(30deg); }
+}
+
+// Idle chomp (slower, subtler)
+.pacman-wrap:not(.pac-moving) {
+  .pac-top { animation: pac-idle-top 1.2s ease-in-out infinite alternate; }
+  .pac-bot { animation: pac-idle-bot 1.2s ease-in-out infinite alternate; }
+}
+
+@keyframes pac-idle-top {
+  0%, 70% { transform: rotate(0deg); }
+  100%    { transform: rotate(-12deg); }
+}
+
+@keyframes pac-idle-bot {
+  0%, 70% { transform: rotate(0deg); }
+  100%    { transform: rotate(12deg); }
+}
+
+// Direction classes
+.pac-dir-right .pacman { transform: rotate(0deg); }
+.pac-dir-down  .pacman { transform: rotate(90deg); }
+.pac-dir-left  .pacman { transform: rotate(180deg); }
+.pac-dir-up    .pacman { transform: rotate(270deg); }
+
+// ~~~ Ghost decorations (floating around maze) ~~~
+@keyframes ghost-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+// ~~~ Responsive ~~~
+@media (max-width: 768px) {
+  .maze-viewport { height: calc(100vh - 48px); }
+  .cat-name { font-size: 0.35rem; letter-spacing: 1px; }
+  .cat-icon { font-size: 1.1rem; }
+  .cat-count { font-size: 0.75rem; }
+  .pacman-wrap { width: 20px; height: 20px; }
+  .pacman { width: 20px; height: 20px; }
+  .pac-top, .pac-bot { width: 20px; height: 10px; }
+  .pac-top { border-radius: 10px 10px 0 0; }
+  .pac-bot { border-radius: 0 0 10px 10px; }
+}
+
+// ================================================================
+// ZONE VIEW — Split Panel Layout
+// ================================================================
+.zone-section {
+  padding: 0;
+  height: calc(100vh - 100px);
+  overflow: hidden;
+}
+
+// --- Split container ---
+.zone-split {
+  display: flex;
+  height: 100%;
+  position: relative;
+}
+
+.zone-timeline-panel {
+  flex: 1;
+  overflow-y: auto;
+  transition: flex 0.3s ease;
+  padding-bottom: 2rem;
+
+  .panel-open & {
+    flex: 0 0 340px;
+    min-width: 280px;
+    border-right: 1px solid rgba($cyber-cyan, 0.15);
+  }
+}
+
+.zone-detail-panel {
+  flex: 1;
+  overflow-y: auto;
+  background: $cyber-bg;
+  position: relative;
+  border-left: 2px solid rgba($cyber-cyan, 0.2);
+  box-shadow: -4px 0 30px rgba($cyber-cyan, 0.06);
+}
+
+// --- Detail panel header ---
+.detail-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(90deg, rgba($cyber-cyan, 0.08), transparent);
+  border-bottom: 1px solid rgba($cyber-cyan, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  backdrop-filter: blur(8px);
+}
+
+.detail-panel-title {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.45rem;
+  font-weight: 700;
+  color: $cyber-cyan;
+  letter-spacing: 4px;
+  text-shadow: 0 0 12px rgba($cyber-cyan, 0.4);
+}
+
+.detail-panel-close {
+  background: none;
+  border: 1px solid rgba($cyber-cyan, 0.3);
+  color: $cyber-cyan;
+  font-size: 1.2rem;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba($cyber-cyan, 0.1);
+    border-color: $cyber-cyan;
+    box-shadow: 0 0 12px rgba($cyber-cyan, 0.3);
+  }
+}
+
+// --- Detail panel body (overrides modal classes from challenge.html) ---
+.detail-panel-body {
+  padding: 0;
+
+  .modal-dialog { max-width: 100%; margin: 0; }
+  .modal-content { background: transparent; border: none; box-shadow: none; }
+  .modal-body { padding: 1.5rem 1.5rem 2rem; }
+
+  // Close button inside modal content — hide it (we have our own)
+  .btn-close { display: none; }
+
+  // Challenge title
+  .challenge-name {
+    font-family: "Press Start 2P", monospace;
+    font-size: 0.7rem;
+    color: $cyber-cyan;
+    text-shadow: 0 0 15px rgba($cyber-cyan, 0.5);
+    letter-spacing: 2px;
+    padding-top: 0.5rem;
+  }
+
+  // Challenge value
+  .challenge-value {
+    font-family: "VT323", monospace;
+    font-size: 1.8rem;
+    color: $cyber-orange;
+    text-shadow: 0 0 10px rgba($cyber-orange, 0.4);
+  }
+
+  // Tags
+  .challenge-tag {
+    font-family: "Orbitron", sans-serif;
+    font-size: 0.35rem;
+    letter-spacing: 1px;
+    border: 1px solid rgba($cyber-cyan, 0.3);
+    background: rgba($cyber-cyan, 0.08) !important;
+    color: $cyber-cyan;
+  }
+
+  // Description
+  .challenge-desc {
+    display: block;
+    padding: 1rem 0;
+    font-family: "VT323", monospace;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: $cyber-text;
+
+    code {
+      color: $cyber-green;
+      background: rgba($cyber-green, 0.08);
+      padding: 0.15em 0.4em;
+    }
+  }
+
+  // Connection info
+  .challenge-connection-info code {
+    font-size: 1.1rem;
+    color: $cyber-green;
+    background: rgba($cyber-green, 0.08);
+    padding: 0.3rem 0.6rem;
+    border: 1px solid rgba($cyber-green, 0.2);
+  }
+
+  // Submit row
+  .submit-row {
+    margin-top: 1rem;
+  }
+
+  .challenge-input {
+    background: $cyber-panel;
+    border: 1px solid $cyber-border;
+    color: $cyber-text;
+    font-family: "VT323", monospace;
+    font-size: 1.2rem;
+    padding: 0.5rem 0.8rem;
+
+    &:focus {
+      border-color: $cyber-cyan;
+      box-shadow: 0 0 12px rgba($cyber-cyan, 0.2);
+      background: rgba($cyber-surface, 0.8);
+    }
+
+    &::placeholder { color: $cyber-muted; }
+  }
+
+  .challenge-submit {
+    font-family: "Orbitron", sans-serif;
+    font-size: 0.5rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    border-color: $cyber-cyan;
+    color: $cyber-cyan;
+
+    &:hover {
+      background: rgba($cyber-cyan, 0.15);
+      box-shadow: 0 0 15px rgba($cyber-cyan, 0.3);
+    }
+  }
+
+  // Nav tabs (Challenge/Solves/Submissions)
+  .nav-tabs {
+    border-bottom: 1px solid $cyber-border;
+
+    .nav-link {
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.4rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: $cyber-muted;
+      border: none;
+      padding: 0.5rem 0.8rem;
+
+      &.active {
+        color: $cyber-cyan;
+        background: transparent;
+        border-bottom: 2px solid $cyber-cyan;
+      }
+
+      &:hover { color: $cyber-text; }
+    }
+  }
+
+  // File buttons
+  .btn-file {
+    font-family: "VT323", monospace;
+    font-size: 1rem;
+    background: rgba($cyber-surface, 0.6);
+    border: 1px solid $cyber-border;
+    color: $cyber-cyan;
+
+    &:hover {
+      background: rgba($cyber-cyan, 0.1);
+      border-color: rgba($cyber-cyan, 0.4);
+    }
+  }
+
+  // Hints
+  details {
+    border: 1px solid $cyber-border;
+    padding: 0.5rem 0.8rem;
+    margin-bottom: 0.5rem;
+    background: rgba($cyber-surface, 0.4);
+
+    summary {
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.4rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: $cyber-orange;
+      cursor: pointer;
+
+      &:hover { color: lighten($cyber-orange, 15%); }
+    }
+  }
+
+  // Alert overrides
+  .alert {
+    font-family: "VT323", monospace;
+    font-size: 1.2rem;
+    border-radius: 0;
+  }
+
+  // Tables (solves, submissions)
+  .table {
+    font-family: "VT323", monospace;
+    font-size: 1rem;
+    color: $cyber-text;
+
+    th {
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.35rem;
+      letter-spacing: 2px;
+      color: $cyber-muted;
+      border-color: $cyber-border;
+    }
+
+    td { border-color: rgba($cyber-border, 0.5); }
+  }
+}
+
+// CRT scanline overlay on detail panel
+.detail-panel-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+}
+
+// --- Zone header bar ---
+.zone-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 1.5rem;
+  background: linear-gradient(180deg, $cyber-surface, $cyber-bg);
+  border-bottom: 2px solid rgba($cyber-cyan, 0.3);
+  box-shadow: 0 2px 20px rgba($cyber-cyan, 0.1);
+}
+
+.zone-back-btn {
+  background: none;
+  border: 1px solid $cyber-cyan;
+  color: $cyber-cyan;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.5rem;
+  font-weight: 700;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all 0.3s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba($cyber-cyan, 0.1);
+    box-shadow: 0 0 15px rgba($cyber-cyan, 0.3);
+  }
+}
+
+.zone-header-icon {
+  font-size: 1.4rem;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.zone-header-title {
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.8rem;
+  letter-spacing: 3px;
+  margin: 0;
+  text-shadow: 0 0 15px currentColor;
+  white-space: nowrap;
+}
+
+.zone-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.zone-progress-track {
+  width: 140px;
+  height: 6px;
+  background: $cyber-panel;
+  border: 1px solid $cyber-border;
+  overflow: hidden;
+}
+
+.zone-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, $cyber-green, $cyber-cyan);
+  box-shadow: 0 0 10px rgba($cyber-green, 0.5);
+  transition: width 0.6s ease;
+}
+
+.zone-progress-label {
+  font-family: "VT323", monospace;
+  font-size: 1rem;
+  color: $cyber-muted;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+// --- Stage timeline ---
+.stage-timeline {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.5rem 3rem;
+  max-width: 720px;
+  position: relative;
+
+  // Vertical neon rail
+  &::before {
+    content: '';
+    position: absolute;
+    left: 28px;
+    top: 2rem;
+    bottom: 3rem;
+    width: 2px;
+    background: linear-gradient(180deg, rgba($cyber-cyan, 0.6), rgba($cyber-cyan, 0.15));
+    box-shadow: 0 0 8px rgba($cyber-cyan, 0.3);
+  }
+}
+
+.timeline-stage {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  min-height: 72px;
+
+  &:last-child .timeline-connector { display: none; }
+}
+
+// Dot on the rail
+.timeline-dot {
+  position: relative;
+  z-index: 2;
+  width: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dot-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid $cyber-border;
+  background: $cyber-panel;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.55rem;
+  font-weight: 900;
+  color: $cyber-muted;
+  transition: all 0.3s;
+}
+
+// Vertical connector between dots (rendered via gap/padding)
+.timeline-connector {
+  display: none; // spacing handled by gap
+}
+
+// Challenge card
+.stage-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba($cyber-surface, 0.6);
+  border: 1px solid $cyber-border;
+  padding: 0.85rem 1.2rem;
+  margin-bottom: 0.6rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+
+  // Horizontal connector line from dot to card
+  &::before {
+    content: '';
+    position: absolute;
+    left: -14px;
+    top: 50%;
+    width: 14px;
+    height: 2px;
+    background: rgba($cyber-cyan, 0.25);
+  }
+
+  &:hover {
+    background: rgba($cyber-surface, 0.9);
+    border-color: rgba($cyber-cyan, 0.5);
+    box-shadow: 0 0 20px rgba($cyber-cyan, 0.12), inset 0 0 30px rgba($cyber-cyan, 0.03);
+    transform: translateX(4px);
+  }
+
+  &:focus { outline: none; }
+}
+
+.stage-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.stage-card-name {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: $cyber-text;
+  letter-spacing: 1.5px;
+  margin-bottom: 0.35rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stage-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.stage-card-pts {
+  font-family: "VT323", monospace;
+  font-size: 1.15rem;
+  color: $cyber-orange;
+  text-shadow: 0 0 6px rgba($cyber-orange, 0.4);
+  letter-spacing: 1px;
+}
+
+.stage-card-solves {
+  font-family: "VT323", monospace;
+  font-size: 1rem;
+  color: $cyber-muted;
+  letter-spacing: 1px;
+}
+
+// Difficulty tags
+.stage-card-diff {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.35rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid;
+
+  &.diff-easy { color: $cyber-green; border-color: rgba($cyber-green, 0.4); background: rgba($cyber-green, 0.08); }
+  &.diff-medium { color: $cyber-orange; border-color: rgba($cyber-orange, 0.4); background: rgba($cyber-orange, 0.08); }
+  &.diff-hard { color: $cyber-red; border-color: rgba($cyber-red, 0.4); background: rgba($cyber-red, 0.08); }
+  &.diff-expert { color: $cyber-purple; border-color: rgba($cyber-purple, 0.4); background: rgba($cyber-purple, 0.08); }
+}
+
+// Status badges
+.stage-card-status {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.stage-badge-cleared,
+.stage-badge-next,
+.stage-badge-boss {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.35rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  padding: 0.25rem 0.7rem;
+}
+
+.stage-badge-cleared {
+  color: $cyber-bg;
+  background: $cyber-green;
+  box-shadow: 0 0 10px rgba($cyber-green, 0.4);
+}
+
+.stage-badge-next {
+  color: $cyber-cyan;
+  border: 1px solid $cyber-cyan;
+  background: rgba($cyber-cyan, 0.1);
+  animation: next-stage-pulse 2s ease-in-out infinite;
+}
+
+.stage-badge-boss {
+  color: $cyber-bg;
+  background: $cyber-red;
+  box-shadow: 0 0 12px rgba($cyber-red, 0.4);
+  animation: boss-badge-pulse 2.5s ease-in-out infinite;
+}
+
+// --- Stage states ---
+
+// Cleared stage
+.stage-cleared {
+  .dot-icon {
+    border-color: $cyber-green;
+    background: rgba($cyber-green, 0.15);
+    color: $cyber-green;
+    box-shadow: 0 0 12px rgba($cyber-green, 0.3);
+  }
+  .stage-card {
+    border-color: rgba($cyber-green, 0.25);
+    &::before { background: rgba($cyber-green, 0.35); }
+  }
+  .stage-card-name { color: rgba($cyber-green, 0.8); }
+}
+
+// Next uncleared stage
+.stage-next {
+  .dot-icon {
+    border-color: $cyber-cyan;
+    background: rgba($cyber-cyan, 0.12);
+    color: $cyber-cyan;
+    box-shadow: 0 0 14px rgba($cyber-cyan, 0.4);
+    animation: next-dot-pulse 2s ease-in-out infinite;
+  }
+  .stage-card {
+    border-color: rgba($cyber-cyan, 0.4);
+    box-shadow: 0 0 15px rgba($cyber-cyan, 0.08);
+    &::before { background: rgba($cyber-cyan, 0.45); }
+  }
+}
+
+// Boss stage
+.stage-boss {
+  .dot-icon {
+    width: 44px;
+    height: 44px;
+    border-color: $cyber-red;
+    border-width: 2.5px;
+    background: rgba($cyber-red, 0.12);
+    color: $cyber-red;
+    font-size: 0.85rem;
+    box-shadow: 0 0 16px rgba($cyber-red, 0.3);
+    animation: boss-dot-pulse 2.5s ease-in-out infinite;
+  }
+  .stage-card {
+    border-color: rgba($cyber-red, 0.35);
+    &::before { background: rgba($cyber-red, 0.35); }
+  }
+  .stage-card-name { color: rgba($cyber-red, 0.9); }
+
+  &.stage-cleared {
+    .dot-icon {
+      border-color: $cyber-green;
+      background: rgba($cyber-green, 0.15);
+      color: $cyber-green;
+      box-shadow: 0 0 12px rgba($cyber-green, 0.3);
+      animation: none;
+    }
+  }
+}
+
+// Selected stage (active in detail panel)
+.stage-selected {
+  .dot-icon {
+    border-color: #fff;
+    box-shadow: 0 0 18px rgba(#fff, 0.4);
+  }
+  .stage-card {
+    border-color: rgba($cyber-cyan, 0.6);
+    background: rgba($cyber-cyan, 0.08);
+    box-shadow: 0 0 20px rgba($cyber-cyan, 0.15), inset 0 0 30px rgba($cyber-cyan, 0.04);
+  }
+}
+
+// Compact timeline cards when panel is open
+.panel-open {
+  .stage-timeline {
+    max-width: 100%;
+    padding: 1rem 0.8rem 2rem;
+  }
+  .stage-card-name { font-size: 0.45rem; }
+  .stage-card-pts { font-size: 1rem; }
+  .stage-card-solves { font-size: 0.9rem; }
+  .stage-card-diff { font-size: 0.3rem; padding: 0.1rem 0.35rem; }
+  .stage-badge-cleared, .stage-badge-next, .stage-badge-boss { font-size: 0.3rem; padding: 0.2rem 0.5rem; }
+}
+
+@keyframes next-stage-pulse {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 12px rgba($cyber-cyan, 0.3); }
+}
+
+@keyframes next-dot-pulse {
+  0%, 100% { box-shadow: 0 0 14px rgba($cyber-cyan, 0.4); transform: scale(1); }
+  50% { box-shadow: 0 0 24px rgba($cyber-cyan, 0.6), 0 0 40px rgba($cyber-cyan, 0.15); transform: scale(1.08); }
+}
+
+@keyframes boss-dot-pulse {
+  0%, 100% { box-shadow: 0 0 16px rgba($cyber-red, 0.3); }
+  50% { box-shadow: 0 0 30px rgba($cyber-red, 0.5), 0 0 50px rgba($cyber-red, 0.15); }
+}
+
+@keyframes boss-badge-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba($cyber-red, 0.4); }
+  50% { box-shadow: 0 0 20px rgba($cyber-red, 0.6); }
+}
+
+// ================================================================
+// LANDING PAGE HERO
+// ================================================================
+.landing-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  padding: 2rem;
+}
+
+// Glitch title
+.hero-glitch {
+  font-family: "Press Start 2P", monospace;
+  font-size: clamp(1.8rem, 5vw, 3.5rem);
+  color: $cyber-cyan;
+  letter-spacing: 6px;
+  text-shadow:
+    0 0 20px rgba($cyber-cyan, 0.6),
+    0 0 60px rgba($cyber-cyan, 0.3),
+    0 0 120px rgba($cyber-cyan, 0.15);
+  position: relative;
+  animation: hero-glow 4s ease-in-out infinite;
+
+  // Glitch pseudo-elements
+  &::before,
+  &::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  &::before {
+    color: $cyber-pink;
+    animation: hero-glitch-1 3s infinite linear alternate-reverse;
+    clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+  }
+
+  &::after {
+    color: $cyber-green;
+    animation: hero-glitch-2 2s infinite linear alternate-reverse;
+    clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+  }
+}
+
+@keyframes hero-glow {
+  0%, 100% { text-shadow: 0 0 20px rgba($cyber-cyan, 0.6), 0 0 60px rgba($cyber-cyan, 0.3); }
+  50% { text-shadow: 0 0 30px rgba($cyber-cyan, 0.8), 0 0 80px rgba($cyber-cyan, 0.4), 0 0 140px rgba($cyber-cyan, 0.2); }
+}
+
+@keyframes hero-glitch-1 {
+  0%, 92% { transform: none; opacity: 0; }
+  93% { transform: translate(-3px, -1px); opacity: 0.7; }
+  94% { transform: translate(2px, 1px); opacity: 0; }
+  95% { transform: translate(-1px, 2px); opacity: 0.5; }
+  96%, 100% { transform: none; opacity: 0; }
+}
+
+@keyframes hero-glitch-2 {
+  0%, 88% { transform: none; opacity: 0; }
+  89% { transform: translate(2px, 1px); opacity: 0.6; }
+  90% { transform: translate(-3px, -1px); opacity: 0; }
+  91% { transform: translate(1px, -2px); opacity: 0.4; }
+  92%, 100% { transform: none; opacity: 0; }
+}
+
+// Tagline
+.hero-tagline {
+  font-family: "Orbitron", sans-serif;
+  font-size: clamp(0.5rem, 1.5vw, 0.8rem);
+  color: $cyber-pink;
+  letter-spacing: 8px;
+  margin-top: 1.5rem;
+  text-shadow: 0 0 15px rgba($cyber-pink, 0.5);
+}
+
+// CTA buttons
+.hero-cta {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 3rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.hero-btn {
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.6rem;
+  color: $cyber-cyan;
+  border: 2px solid $cyber-cyan;
+  padding: 1rem 2.5rem;
+  text-decoration: none;
+  letter-spacing: 3px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba($cyber-cyan, 0.15), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+  }
+
+  &:hover {
+    color: #fff;
+    border-color: #fff;
+    box-shadow: 0 0 25px rgba($cyber-cyan, 0.4), inset 0 0 25px rgba($cyber-cyan, 0.1);
+    text-shadow: 0 0 10px rgba($cyber-cyan, 0.6);
+    text-decoration: none;
+
+    &::before { transform: translateX(100%); }
+  }
+
+  &.hero-btn-alt {
+    color: $cyber-pink;
+    border-color: $cyber-pink;
+
+    &::before { background: linear-gradient(90deg, transparent, rgba($cyber-pink, 0.15), transparent); }
+
+    &:hover {
+      color: #fff;
+      border-color: #fff;
+      box-shadow: 0 0 25px rgba($cyber-pink, 0.4), inset 0 0 25px rgba($cyber-pink, 0.1);
+      text-shadow: 0 0 10px rgba($cyber-pink, 0.6);
+    }
+  }
+}
+
+// Stats bar
+.hero-stats {
+  display: flex;
+  gap: 3rem;
+  margin-top: 4rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.hero-stat-num {
+  font-family: "VT323", monospace;
+  font-size: 2.5rem;
+  color: $cyber-orange;
+  text-shadow: 0 0 10px rgba($cyber-orange, 0.5);
+  line-height: 1;
+}
+
+.hero-stat-label {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.35rem;
+  font-weight: 700;
+  color: $cyber-muted;
+  letter-spacing: 3px;
+}
+
+// ================================================================
+// SOLVE CELEBRATION
+// ================================================================
+.solve-celebration {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 10000;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.celeb-out {
+    animation: celeb-fadeout 0.6s ease forwards;
+  }
+}
+
+.celeb-flash {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.25);
+  animation: celeb-flash-anim 0.2s ease-out forwards;
+}
+
+.celeb-body {
+  position: relative;
+  text-align: center;
+  animation: celeb-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.celeb-title {
+  font-family: "Press Start 2P", "Orbitron", sans-serif;
+  font-size: 2.8rem;
+  color: $cyber-green;
+  text-shadow:
+    0 0 20px $cyber-green,
+    0 0 40px $cyber-green,
+    0 0 80px rgba($cyber-green, 0.4);
+  letter-spacing: 6px;
+}
+
+.celeb-points {
+  font-family: "VT323", monospace;
+  font-size: 2.4rem;
+  color: $cyber-orange;
+  text-shadow: 0 0 15px rgba($cyber-orange, 0.7);
+  margin-top: 0.5rem;
+  animation: celeb-pts-float 2.2s ease-out forwards;
+}
+
+.celeb-particle {
+  position: absolute;
+  bottom: 50%;
+  width: 5px; height: 5px;
+  border-radius: 1px;
+  animation: celeb-rise 1.5s ease-out forwards;
+}
+
+@keyframes celeb-flash-anim {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes celeb-pop {
+  0%   { transform: scale(0.2); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes celeb-pts-float {
+  0%   { transform: translateY(0); opacity: 1; }
+  70%  { opacity: 1; }
+  100% { transform: translateY(-40px); opacity: 0.6; }
+}
+
+@keyframes celeb-rise {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-250px) scale(0); opacity: 0; }
+}
+
+@keyframes celeb-fadeout {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
