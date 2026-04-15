@@ -54,6 +54,18 @@
                   <template x-if="standing.bracket_name">
                     <span class="badge bg-secondary ms-2" x-text="standing.bracket_name"></span>
                   </template>
+                  <!-- Easter Egg flair badge -->
+                  <template x-if="eggCounts[standing.account_id]">
+                    <span class="ee-flair-badge"
+                      :class="{
+                        'ee-flair-1': eggCounts[standing.account_id] >= 1 && eggCounts[standing.account_id] < 5,
+                        'ee-flair-5': eggCounts[standing.account_id] >= 5 && eggCounts[standing.account_id] < 10,
+                        'ee-flair-10': eggCounts[standing.account_id] >= 10 && eggCounts[standing.account_id] < 15,
+                        'ee-flair-15': eggCounts[standing.account_id] >= 15,
+                      }"
+                      x-text="'?' + String.fromCharCode(215) + eggCounts[standing.account_id]">
+                    </span>
+                  </template>
                 </td>
                 <td x-text="standing.score"></td>
               </tr>

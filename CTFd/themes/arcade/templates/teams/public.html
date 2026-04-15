@@ -84,6 +84,19 @@
   <div class="container">
     {% include "components/errors.html" %}
 
+    <!-- Trophy Case — Easter Egg collection (loaded dynamically) -->
+    <div id="trophy-case" x-data="TrophyCase" x-show="trophies.length > 0" x-cloak class="trophy-case-section">
+      <h3 class="trophy-case-title">TROPHY CASE</h3>
+      <div class="trophy-case-grid">
+        <template x-for="trophy in trophies" :key="trophy.name">
+          <div class="trophy-item">
+            <span class="trophy-icon" x-text="trophy.icon"></span>
+            <span class="trophy-label" x-text="trophy.name"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+
     <br>
 
     <div class="row">

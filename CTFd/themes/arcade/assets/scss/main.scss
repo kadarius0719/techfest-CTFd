@@ -1961,3 +1961,443 @@ hr {
   0%   { opacity: 1; }
   100% { opacity: 0; }
 }
+
+// ================================================================
+// EASTER EGG ZONE — Mystery & Trophy View
+// ================================================================
+
+.ee-zone {
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+// --- Mystery state (before any solves) ---
+.ee-mystery {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 2rem;
+}
+
+.ee-mystery-inner {
+  text-align: center;
+  max-width: 520px;
+}
+
+.ee-glitch-icon {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 5rem;
+  color: $cyber-cyan;
+  text-shadow: 0 0 40px $cyber-cyan, 0 0 80px rgba($cyber-cyan, 0.3);
+  animation: ee-glitch 3s infinite;
+  margin-bottom: 1.5rem;
+}
+
+@keyframes ee-glitch {
+  0%, 90%, 100% { opacity: 1; transform: none; text-shadow: 0 0 40px $cyber-cyan; }
+  91% { opacity: 0.8; transform: translate(-3px, 1px); text-shadow: 3px 0 $cyber-pink, -3px 0 $cyber-green; }
+  93% { opacity: 1; transform: translate(2px, -1px); text-shadow: -2px 0 $cyber-pink, 2px 0 $cyber-green; }
+  95% { opacity: 0.6; transform: translate(-1px, 2px); }
+  97% { opacity: 1; transform: none; }
+}
+
+.ee-signal-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.3rem;
+  color: $cyber-cyan;
+  text-shadow: 0 0 15px rgba($cyber-cyan, 0.5);
+  letter-spacing: 4px;
+  margin-bottom: 0.75rem;
+  animation: ee-pulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes ee-pulse {
+  from { text-shadow: 0 0 15px rgba($cyber-cyan, 0.3); }
+  to { text-shadow: 0 0 30px rgba($cyber-cyan, 0.8); }
+}
+
+.ee-signal-sub {
+  font-family: 'VT323', monospace;
+  font-size: 1.1rem;
+  color: #6a6a8a;
+  margin-bottom: 2.5rem;
+}
+
+.ee-submit-wrap {
+  margin-bottom: 2rem;
+}
+
+.ee-terminal-prompt {
+  font-family: 'VT323', monospace;
+  font-size: 1.2rem;
+  color: $cyber-green;
+  text-align: left;
+  margin-bottom: 0.75rem;
+  animation: ee-blink-cursor 1s step-end infinite;
+}
+
+@keyframes ee-blink-cursor {
+  50% { border-right-color: transparent; }
+}
+
+.ee-submit-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ee-submit-input {
+  flex: 1;
+  background: rgba($cyber-panel, 0.8);
+  border: 1px solid rgba($cyber-cyan, 0.3);
+  color: $cyber-cyan;
+  font-family: 'VT323', monospace;
+  font-size: 1.2rem;
+  padding: 0.6rem 1rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus {
+    border-color: $cyber-cyan;
+    box-shadow: 0 0 15px rgba($cyber-cyan, 0.2);
+  }
+
+  &::placeholder {
+    color: #3a3a5a;
+  }
+}
+
+.ee-submit-btn {
+  background: rgba($cyber-cyan, 0.1);
+  border: 1px solid rgba($cyber-cyan, 0.4);
+  color: $cyber-cyan;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  padding: 0.6rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: rgba($cyber-cyan, 0.2);
+    box-shadow: 0 0 15px rgba($cyber-cyan, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+}
+
+.ee-response {
+  margin-top: 1rem;
+  padding: 0.6rem 1rem;
+  font-family: 'VT323', monospace;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.ee-response-correct {
+  color: $cyber-green;
+  background: rgba($cyber-green, 0.08);
+  border: 1px solid rgba($cyber-green, 0.3);
+  text-shadow: 0 0 10px rgba($cyber-green, 0.5);
+}
+
+.ee-response-wrong {
+  color: $cyber-red;
+  background: rgba($cyber-red, 0.08);
+  border: 1px solid rgba($cyber-red, 0.3);
+}
+
+.ee-response-icon {
+  font-size: 1.3rem;
+  margin-right: 0.5rem;
+}
+
+.ee-mystery-hint {
+  margin-top: 2.5rem;
+  font-family: 'VT323', monospace;
+  color: #3a3a5a;
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+// --- Revealed state (after first solve) ---
+.ee-revealed {
+  padding: 1rem 2rem 2rem;
+}
+
+.ee-revealed-inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.ee-quick-submit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba($cyber-panel, 0.6);
+  border: 1px solid rgba($cyber-cyan, 0.15);
+}
+
+.ee-submit-inline {
+  flex: 1;
+  min-width: 300px;
+}
+
+.ee-qs-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem;
+  color: $cyber-cyan;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.ee-response-inline {
+  font-size: 0.95rem;
+  margin-top: 0;
+  padding: 0.4rem 0.8rem;
+  white-space: nowrap;
+}
+
+.ee-progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.ee-progress-track {
+  flex: 1;
+  height: 6px;
+  background: rgba($cyber-surface, 0.8);
+  border: 1px solid rgba($cyber-cyan, 0.1);
+  overflow: hidden;
+}
+
+.ee-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, $cyber-cyan, $cyber-green);
+  box-shadow: 0 0 8px rgba($cyber-cyan, 0.5);
+  transition: width 0.5s ease;
+}
+
+.ee-progress-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem;
+  color: $cyber-cyan;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+// --- Trophy Grid ---
+.ee-trophy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.ee-trophy-card {
+  background: rgba($cyber-panel, 0.6);
+  border: 1px solid rgba(#4a4a6a, 0.3);
+  padding: 1.2rem 0.8rem;
+  text-align: center;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.ee-trophy-found {
+  border-color: rgba($cyber-cyan, 0.4);
+  background: rgba($cyber-cyan, 0.05);
+  box-shadow: 0 0 20px rgba($cyber-cyan, 0.08);
+
+  .ee-trophy-icon {
+    font-size: 2rem;
+    filter: none;
+    opacity: 1;
+  }
+
+  .ee-trophy-name {
+    color: $cyber-cyan;
+    text-shadow: 0 0 8px rgba($cyber-cyan, 0.4);
+  }
+}
+
+.ee-trophy-locked {
+  .ee-trophy-icon {
+    font-size: 2rem;
+    filter: grayscale(1) brightness(0.3);
+    opacity: 0.4;
+  }
+
+  .ee-trophy-name {
+    color: #3a3a5a;
+  }
+}
+
+.ee-trophy-icon {
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+
+.ee-trophy-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.55rem;
+  letter-spacing: 2px;
+  margin-bottom: 0.3rem;
+}
+
+.ee-trophy-pts {
+  font-family: 'VT323', monospace;
+  font-size: 0.9rem;
+  color: $cyber-orange;
+}
+
+.ee-trophy-hint {
+  font-family: 'VT323', monospace;
+  font-size: 0.8rem;
+  color: #4a4a6a;
+  margin-top: 0.4rem;
+  font-style: italic;
+}
+
+// ================================================================
+// EASTER EGG — Maze Node Special Styling
+// ================================================================
+.maze-cat-btn {
+  // Easter Eggs node gets special glitch styling
+  &[style*="50%"][style*="34.29%"] {
+    min-width: 60px;
+    min-height: 60px;
+    .cat-icon {
+      font-size: 2rem;
+      animation: ee-glitch 3s infinite;
+    }
+  }
+}
+
+// ================================================================
+// TROPHY CASE — Team Profile
+// ================================================================
+.trophy-case-section {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: rgba($cyber-panel, 0.5);
+  border: 1px solid rgba($cyber-cyan, 0.15);
+  border-left: 3px solid $cyber-cyan;
+}
+
+.trophy-case-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  color: $cyber-cyan;
+  letter-spacing: 4px;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 10px rgba($cyber-cyan, 0.3);
+}
+
+.trophy-case-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.trophy-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba($cyber-surface, 0.5);
+  border: 1px solid rgba($cyber-cyan, 0.2);
+  padding: 0.4rem 0.8rem;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: rgba($cyber-cyan, 0.5);
+    box-shadow: 0 0 10px rgba($cyber-cyan, 0.15);
+  }
+}
+
+.trophy-icon {
+  font-size: 1.2rem;
+}
+
+.trophy-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.55rem;
+  color: $cyber-cyan;
+  letter-spacing: 2px;
+}
+
+// ================================================================
+// SCOREBOARD FLAIR — Easter Egg Badges
+// ================================================================
+.ee-flair-badge {
+  display: inline-block;
+  font-family: 'VT323', monospace;
+  font-size: 0.85rem;
+  padding: 0.1rem 0.5rem;
+  margin-left: 0.5rem;
+  border-radius: 0;
+  vertical-align: middle;
+  letter-spacing: 1px;
+}
+
+.ee-flair-1 {
+  color: $cyber-cyan;
+  background: rgba($cyber-cyan, 0.1);
+  border: 1px solid rgba($cyber-cyan, 0.3);
+}
+
+.ee-flair-5 {
+  color: $cyber-pink;
+  background: rgba($cyber-pink, 0.1);
+  border: 1px solid rgba($cyber-pink, 0.3);
+  text-shadow: 0 0 8px rgba($cyber-pink, 0.4);
+}
+
+.ee-flair-10 {
+  color: $cyber-orange;
+  background: rgba($cyber-orange, 0.1);
+  border: 1px solid rgba($cyber-orange, 0.3);
+  text-shadow: 0 0 8px rgba($cyber-orange, 0.4);
+  animation: ee-flair-glow 2s ease-in-out infinite alternate;
+}
+
+.ee-flair-15 {
+  color: #ffe66d;
+  background: linear-gradient(135deg, rgba($cyber-cyan, 0.15), rgba($cyber-pink, 0.15), rgba($cyber-green, 0.15));
+  border: 1px solid rgba(#ffe66d, 0.5);
+  text-shadow: 0 0 10px rgba(#ffe66d, 0.6);
+  animation: ee-flair-rainbow 3s linear infinite;
+}
+
+@keyframes ee-flair-glow {
+  from { box-shadow: 0 0 5px rgba($cyber-orange, 0.2); }
+  to { box-shadow: 0 0 15px rgba($cyber-orange, 0.4); }
+}
+
+@keyframes ee-flair-rainbow {
+  0%   { border-color: $cyber-cyan; text-shadow: 0 0 10px $cyber-cyan; }
+  33%  { border-color: $cyber-pink; text-shadow: 0 0 10px $cyber-pink; }
+  66%  { border-color: $cyber-green; text-shadow: 0 0 10px $cyber-green; }
+  100% { border-color: $cyber-cyan; text-shadow: 0 0 10px $cyber-cyan; }
+}
+
+/*! ================================================================
+
+     ████████╗███████╗ ██████╗██╗  ██╗███████╗███████╗███████╗████████╗
+     ╚══██╔══╝██╔════╝██╔════╝██║  ██║██╔════╝██╔════╝██╔════╝╚══██╔══╝
+        ██║   █████╗  ██║     ███████║█████╗  █████╗  ███████╗   ██║
+        ██║   ██╔══╝  ██║     ██╔══██║██╔══╝  ██╔══╝  ╚════██║   ██║
+        ██║   ███████╗╚██████╗██║  ██║██║     ███████╗███████║   ██║
+        ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝     ╚══════╝╚══════╝   ╚═╝
+
+     CSS ART GALLERY — You found the hidden gallery!
+     TECHFEST{css_art_gallery_hidden_in_the_stylesheet}
+
+   ================================================================ */

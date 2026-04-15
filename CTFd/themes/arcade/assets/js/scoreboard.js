@@ -37,6 +37,21 @@ Alpine.data("ScoreboardList", () => ({
   standings: [],
   brackets: [],
   activeBracket: null,
+  eggCounts: {},
+
+  async fetchEggCounts() {
+    // Fetch easter egg solve counts from secure endpoint
+    // (Easter Egg challenges are hidden from /api/v1/challenges)
+    try {
+      const resp = await CTFd.fetch("/api/v1/egg-solves", { method: "GET" });
+      const data = await resp.json();
+      if (data.success && data.counts) {
+        this.eggCounts = data.counts;
+      }
+    } catch (e) {
+      // Silently fail — flair is cosmetic
+    }
+  },
 
   async update() {
     this.brackets = await CTFd.pages.scoreboard.getBrackets(CTFd.config.userMode);
@@ -49,9 +64,11 @@ Alpine.data("ScoreboardList", () => ({
     });
 
     this.update();
+    this.fetchEggCounts();
 
     setInterval(() => {
       this.update();
+      this.fetchEggCounts();
     }, scoreboardUpdateInterval);
   },
 }));

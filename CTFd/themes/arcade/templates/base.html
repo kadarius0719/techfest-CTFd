@@ -200,6 +200,21 @@
 })();
 </script>
 
+<!-- Easter Egg: Highscore Injection (IDDQD) -->
+<script type="text/javascript">
+(function() {
+  // Check if any team on the scoreboard or the user's own team is named IDDQD
+  var teamName = (window.init && window.init.teamName) || '';
+  if (teamName === 'IDDQD') {
+    setTimeout(function() {
+      console.log("%c GOD MODE ACTIVATED! ", "background: #ff003c; color: #fff; font-family: 'Press Start 2P'; font-size: 16px; padding: 10px;");
+      console.log("%c IDDQD — DOOM (1993)", "color: #ff6b35; font-family: monospace; font-size: 12px;");
+      console.log("%c Check /api/v1/iddqd for your reward...", "color: #39ff14; font-family: monospace; font-size: 12px;");
+    }, 2000);
+  }
+})();
+</script>
+
 <!-- Typing animation helper for elements with class 'typewriter' -->
 <script type="text/javascript">
 (function() {

@@ -5,7 +5,7 @@
     "isEntry": true
   },
   "assets/js/page.js": {
-    "file": "assets/page.9d188b19.js",
+    "file": "assets/page.26e87ea4.js",
     "src": "assets/js/page.js",
     "isEntry": true,
     "imports": [
@@ -30,7 +30,7 @@
     ]
   },
   "assets/js/challenges.js": {
-    "file": "assets/challenges.57289c46.js",
+    "file": "assets/challenges.3b0b1fce.js",
     "src": "assets/js/challenges.js",
     "isEntry": true,
     "imports": [
@@ -38,7 +38,7 @@
     ]
   },
   "assets/js/scoreboard.js": {
-    "file": "assets/scoreboard.bdd94812.js",
+    "file": "assets/scoreboard.bb2fc33f.js",
     "src": "assets/js/scoreboard.js",
     "isEntry": true,
     "imports": [
@@ -56,7 +56,7 @@
     ]
   },
   "assets/js/teams/public.js": {
-    "file": "assets/teams_public.1f007619.js",
+    "file": "assets/teams_public.709580a9.js",
     "src": "assets/js/teams/public.js",
     "isEntry": true,
     "imports": [
@@ -144,7 +144,7 @@
     ]
   },
   "assets/scss/main.scss": {
-    "file": "assets/main.8ae0b541.css",
+    "file": "assets/main.18184130.css",
     "src": "assets/scss/main.scss",
     "isEntry": true
   }

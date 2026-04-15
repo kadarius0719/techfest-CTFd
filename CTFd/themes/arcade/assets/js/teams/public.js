@@ -7,6 +7,23 @@ import { embed } from "../utils/graphs/echarts";
 
 window.Alpine = Alpine;
 
+Alpine.data("TrophyCase", () => ({
+  trophies: [],
+
+  async init() {
+    try {
+      // Fetch trophies from secure endpoint (no challenge names/category leaked)
+      const resp = await CTFd.fetch(`/api/v1/egg-solves?team_id=${window.TEAM.id}`, { method: "GET" });
+      const data = await resp.json();
+      if (data.success && data.trophies) {
+        this.trophies = data.trophies;
+      }
+    } catch (e) {
+      // Silently fail — trophies are cosmetic
+    }
+  },
+}));
+
 Alpine.data("TeamGraphs", () => ({
   solves: null,
   fails: null,

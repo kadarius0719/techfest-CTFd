@@ -17,9 +17,9 @@
       <button @click="exitZone()" class="zone-back-btn">&larr; BACK TO MAP</button>
       <span class="zone-header-icon" :style="'color:' + getCategoryMeta(activeCategory || '').color"
         x-text="getCategoryMeta(activeCategory || '').icon"></span>
-      <h2 class="zone-header-title" x-text="activeCategory"
+      <h2 class="zone-header-title" x-text="isEasterEggZone() ? '???' : activeCategory"
         :style="'color:' + getCategoryMeta(activeCategory || '').color"></h2>
-      <div class="zone-progress-wrap">
+      <div class="zone-progress-wrap" x-show="!isEasterEggZone()">
         <div class="zone-progress-track">
           <div class="zone-progress-fill" :style="'width:' + getCategoryStats(activeCategory).percent + '%'"></div>
         </div>
@@ -231,8 +231,8 @@
                 'cat-avatar-here': !isNavigating && _currentCategory === cat
               }">
               <span class="cat-icon" :style="'color:' + getCategoryMeta(cat).color" x-text="getCategoryMeta(cat).icon"></span>
-              <span class="cat-name" x-text="cat"></span>
-              <span class="cat-count" x-text="getCategoryStats(cat).solved + '/' + getCategoryStats(cat).total"></span>
+              <span class="cat-name" x-show="cat !== 'Easter Eggs'" x-text="cat"></span>
+              <span class="cat-count" x-show="cat !== 'Easter Eggs'" x-text="getCategoryStats(cat).solved + '/' + getCategoryStats(cat).total"></span>
             </button>
           </template>
 
@@ -252,7 +252,7 @@
     <!-- =========================================== -->
     <!-- ZONE VIEW — Split Panel Layout              -->
     <!-- =========================================== -->
-    <div x-show="loaded && view === 'zone'" x-transition.opacity.duration.300ms class="zone-section" x-cloak>
+    <div x-show="loaded && view === 'zone' && !isEasterEggZone()" x-transition.opacity.duration.300ms class="zone-section" x-cloak>
       <div class="zone-split" :class="{ 'panel-open': selectedChallenge }">
 
         <!-- LEFT: Stage Timeline -->
@@ -306,6 +306,100 @@
           <div class="detail-panel-scanlines"></div>
         </div>
 
+      </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- EASTER EGG ZONE — Mystery / Trophy View     -->
+    <!-- =========================================== -->
+    <div x-show="loaded && view === 'zone' && isEasterEggZone()" x-transition.opacity.duration.300ms class="zone-section ee-zone" x-cloak>
+
+      <!-- STATE 1: Mystery — no solves yet -->
+      <div x-show="!easterEggRevealed" class="ee-mystery" x-transition.opacity.duration.500ms>
+        <div class="ee-mystery-inner">
+          <div class="ee-glitch-icon">?</div>
+          <div class="ee-signal-text">UNKNOWN FREQUENCY DETECTED</div>
+          <div class="ee-signal-sub">An encrypted signal emanates from somewhere on the grid...</div>
+
+          <div class="ee-submit-wrap">
+            <div class="ee-terminal-prompt">&gt; Enter transmission code_</div>
+            <form @submit.prevent="submitEasterEgg()" class="ee-submit-form">
+              <input type="text" x-model="easterEggSubmission"
+                placeholder="TECHFEST{...}"
+                class="ee-submit-input"
+                :disabled="easterEggSubmitting"
+                autocomplete="off" spellcheck="false">
+              <button type="submit" class="ee-submit-btn" :disabled="easterEggSubmitting">
+                <span x-show="!easterEggSubmitting">TRANSMIT</span>
+                <span x-show="easterEggSubmitting">DECODING...</span>
+              </button>
+            </form>
+
+            <!-- Response messages -->
+            <div x-show="easterEggResponse && easterEggResponse.status === 'correct'" class="ee-response ee-response-correct" x-transition>
+              <span class="ee-response-icon" x-text="easterEggResponse?.trophy?.icon || '🏆'"></span>
+              SECRET FOUND! Unlocking collection...
+            </div>
+            <div x-show="easterEggResponse && easterEggResponse.status === 'incorrect'" class="ee-response ee-response-wrong" x-transition>
+              SIGNAL NOT RECOGNIZED — Keep searching the grid...
+            </div>
+          </div>
+
+          <div class="ee-mystery-hint">
+            <p>Secrets are hidden throughout the platform.</p>
+            <p>Inspect everything. Trust nothing.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATE 2: Revealed — trophy collection + submission form -->
+      <div x-show="easterEggRevealed" class="ee-revealed" x-transition.opacity.duration.500ms>
+        <div class="ee-revealed-inner">
+
+          <!-- Quick submit bar at top -->
+          <div class="ee-quick-submit">
+            <form @submit.prevent="submitEasterEgg()" class="ee-submit-form ee-submit-inline">
+              <span class="ee-qs-label">TRANSMIT:</span>
+              <input type="text" x-model="easterEggSubmission"
+                placeholder="TECHFEST{...}"
+                class="ee-submit-input"
+                :disabled="easterEggSubmitting"
+                autocomplete="off" spellcheck="false">
+              <button type="submit" class="ee-submit-btn" :disabled="easterEggSubmitting">
+                <span x-show="!easterEggSubmitting">TRANSMIT</span>
+                <span x-show="easterEggSubmitting">...</span>
+              </button>
+            </form>
+            <div x-show="easterEggResponse && easterEggResponse.status === 'correct'" class="ee-response ee-response-correct ee-response-inline" x-transition>
+              <span x-text="easterEggResponse?.trophy?.icon || '🏆'"></span>
+              <span x-text="easterEggResponse?.trophy?.name || 'FOUND'"></span> UNLOCKED!
+            </div>
+            <div x-show="easterEggResponse && easterEggResponse.status === 'incorrect'" class="ee-response ee-response-wrong ee-response-inline" x-transition>
+              SIGNAL NOT RECOGNIZED
+            </div>
+          </div>
+
+          <!-- Progress -->
+          <div class="ee-progress-bar">
+            <div class="ee-progress-track">
+              <div class="ee-progress-fill" :style="'width:' + ((getEasterEggSolves().length / getEasterEggChallenges().length) * 100) + '%'"></div>
+            </div>
+            <span class="ee-progress-label" x-text="getEasterEggSolves().length + ' / ' + getEasterEggChallenges().length + ' SIGNALS DECODED'"></span>
+          </div>
+
+          <!-- Trophy Grid -->
+          <div class="ee-trophy-grid">
+            <template x-for="egg in getEasterEggChallenges()" :key="egg.id">
+              <div class="ee-trophy-card" :class="{ 'ee-trophy-found': egg.solved, 'ee-trophy-locked': !egg.solved }">
+                <div class="ee-trophy-icon" x-text="egg.solved ? getTrophy(egg).icon : '?'"></div>
+                <div class="ee-trophy-name" x-text="egg.solved ? getTrophy(egg).name : '???'"></div>
+                <div class="ee-trophy-pts" x-text="egg.value + ' PTS'"></div>
+                <div class="ee-trophy-hint" x-show="!egg.solved" x-text="egg.hint || ''"></div>
+              </div>
+            </template>
+          </div>
+
+        </div>
       </div>
     </div>
 

@@ -56,16 +56,18 @@ curl -sf http://localhost:8000/ >/dev/null 2>&1 || {
 
 # Login and get API token
 echo -e "${CYAN}▸${NC} Authenticating..."
-NONCE=$(curl -sf -c /tmp/ctfd_import_cookies.txt http://localhost:8000/login | grep -o 'name="nonce" value="[^"]*"' | grep -o 'value="[^"]*"' | cut -d'"' -f2)
+NONCE=$(curl -sf -c /tmp/ctfd_import_cookies.txt http://localhost:8000/login | sed -n 's/.*name="nonce"[^>]*value="\([^"]*\)".*/\1/p' | head -1)
 curl -sf -b /tmp/ctfd_import_cookies.txt -c /tmp/ctfd_import_cookies.txt \
   -X POST http://localhost:8000/login \
   -d "name=admin&password=admin&nonce=$NONCE&_submit=Submit" \
   -L -o /dev/null
 
+CSRF=$(curl -sf -b /tmp/ctfd_import_cookies.txt http://localhost:8000/settings | sed -n "s/.*'csrfNonce':[[:space:]]*\"\([^\"]*\)\".*/\1/p" | head -1)
 TOKEN_RESP=$(curl -sf -b /tmp/ctfd_import_cookies.txt \
   -X POST http://localhost:8000/api/v1/tokens \
   -H "Content-Type: application/json" \
-  -d '{"description":"import-script","expiration":""}')
+  -H "CSRF-Token: $CSRF" \
+  -d '{"description":"import-script","expiration":null}')
 API_TOKEN=$(echo "$TOKEN_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['value'])")
 rm -f /tmp/ctfd_import_cookies.txt
 

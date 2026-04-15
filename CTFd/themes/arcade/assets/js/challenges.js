@@ -320,6 +320,14 @@ Alpine.data("ChallengeBoard", () => ({
   _currentCategory: "Tutorial Zone",
   _eatenPellets: new Set(),
 
+  // Easter Eggs state (data comes from /api/v1/egg-status, NOT from main challenges list)
+  easterEggSubmission: "",
+  easterEggResponse: null,
+  easterEggSubmitting: false,
+  easterEggRevealed: false,
+  _easterEggs: [],       // Loaded from custom secure endpoint
+  _easterEggsLoaded: false,
+
   // World map metadata — visual config per category
   _categoryMeta: {
     "Tutorial Zone":    { icon: "▶",  color: "#39ff14" },
@@ -331,6 +339,7 @@ Alpine.data("ChallengeBoard", () => ({
     "AI Arena":         { icon: "⬢",  color: "#e100ff" },
     "Code Breakers":    { icon: "⚡", color: "#ffe66d" },
     "Bonus Stage":      { icon: "★",  color: "#ff6b35" },
+    "Easter Eggs":      { icon: "?",  color: "#ffe66d" },
   },
 
   // SVG viewBox positions (1400x700 landscape) and percentage equivalents
@@ -347,6 +356,8 @@ Alpine.data("ChallengeBoard", () => ({
     "Packet Arena":     { x: 200,  y: 570, pctX: 14.29, pctY: 81.43 },
     "Code Breakers":    { x: 700,  y: 570, pctX: 50,    pctY: 81.43 },
     "Bonus Stage":      { x: 1200, y: 570, pctX: 85.71, pctY: 81.43 },
+    // Easter Eggs — hidden node in center of maze
+    "Easter Eggs":      { x: 700,  y: 240, pctX: 50,    pctY: 34.29 },
     // Corridor junction waypoints
     "J_TL":             { x: 450,  y: 130, pctX: 32.14, pctY: 18.57 },
     "J_TR":             { x: 950,  y: 130, pctX: 67.86, pctY: 18.57 },
@@ -362,13 +373,14 @@ Alpine.data("ChallengeBoard", () => ({
     // Top row (y=130)
     "Tutorial Zone":   ["J_TL"],
     "J_TL":            ["Tutorial Zone", "Cipher Quest", "J_ML"],
-    "Cipher Quest":    ["J_TL", "J_TR"],
+    "Cipher Quest":    ["J_TL", "J_TR", "Easter Eggs"],
+    "Easter Eggs":     ["Cipher Quest", "Secure Fortress"],
     "J_TR":            ["Cipher Quest", "Web Warfare", "J_MR"],
     "Web Warfare":     ["J_TR"],
     // Middle row (y=350)
     "Data Dungeon":    ["J_ML", "Packet Arena"],
     "J_ML":            ["Data Dungeon", "Secure Fortress", "J_TL"],
-    "Secure Fortress": ["J_ML", "J_MR", "Code Breakers"],
+    "Secure Fortress": ["J_ML", "J_MR", "Code Breakers", "Easter Eggs"],
     "J_MR":            ["Secure Fortress", "AI Arena", "J_TR"],
     "AI Arena":        ["J_MR", "Bonus Stage"],
     // Bottom row (y=570)
@@ -380,7 +392,13 @@ Alpine.data("ChallengeBoard", () => ({
   },
 
   async init() {
-    this.challenges = await CTFd.pages.challenges.getChallenges();
+    // Load main challenges and filter out any Easter Eggs that might leak through
+    const allChallenges = await CTFd.pages.challenges.getChallenges();
+    this.challenges = allChallenges.filter(c => c.category !== "Easter Eggs");
+
+    // Load Easter Egg data from secure endpoint (no names/category leaked)
+    await this._loadEasterEggs();
+
     this.loaded = true;
 
     if (window.location.hash) {
@@ -535,6 +553,12 @@ Alpine.data("ChallengeBoard", () => ({
 
   getCategoryStats(category) {
     if (!category) return { total: 0, solved: 0, percent: 0, hasBoss: false, bossSolved: false };
+    // Easter Eggs use separate data source
+    if (category === "Easter Eggs") {
+      const total = this._easterEggs.length;
+      const solved = this._easterEggs.filter(e => e.solved).length;
+      return { total, solved, percent: total > 0 ? Math.round((solved / total) * 100) : 0, hasBoss: false, bossSolved: false };
+    }
     const chals = this.getChallenges(category);
     const total = chals.length;
     const solved = chals.filter(c => c.solved_by_me).length;
@@ -581,9 +605,105 @@ Alpine.data("ChallengeBoard", () => ({
     Alpine.store("challenge").data = { view: "" };
   },
 
+  // --- Easter Eggs helpers ---
+  // Easter Egg data comes from /api/v1/egg-status (secure endpoint),
+  // NOT from the main challenges list. This prevents leaking the
+  // "Easter Eggs" category, challenge names, etc. in /api/v1/challenges.
+
+  async _loadEasterEggs() {
+    try {
+      const resp = await CTFd.fetch("/api/v1/egg-status", { method: "GET" });
+      const data = await resp.json();
+      if (data.success) {
+        this._easterEggs = data.eggs;
+        this._easterEggsLoaded = true;
+      }
+    } catch (e) {
+      // Silently fail — eggs are a bonus feature
+      this._easterEggs = [];
+    }
+  },
+
+  isEasterEggZone() {
+    return this.activeCategory === "Easter Eggs";
+  },
+
+  getEasterEggChallenges() {
+    return this._easterEggs;
+  },
+
+  getEasterEggSolves() {
+    return this._easterEggs.filter(e => e.solved);
+  },
+
+  hasAnyEasterEggSolve() {
+    return this.getEasterEggSolves().length > 0;
+  },
+
+  getTrophy(egg) {
+    // Solved eggs have trophy from server; unsolved show ?
+    return egg.trophy || { icon: "?", name: "UNKNOWN" };
+  },
+
+  async submitEasterEgg() {
+    if (!this.easterEggSubmission.trim() || this.easterEggSubmitting) return;
+    this.easterEggSubmitting = true;
+    this.easterEggResponse = null;
+
+    const unsolved = this._easterEggs.filter(e => !e.solved);
+    let found = false;
+
+    for (const egg of unsolved) {
+      try {
+        const resp = await CTFd.pages.challenge.submitChallenge(
+          egg.id,
+          this.easterEggSubmission,
+        );
+        if (resp.data.status === "correct") {
+          found = true;
+          // Refresh egg data from secure endpoint
+          await this._loadEasterEggs();
+          // Find the now-solved egg to get its trophy
+          const solvedEgg = this._easterEggs.find(e => e.id === egg.id);
+          this.easterEggResponse = {
+            status: "correct",
+            trophy: solvedEgg?.trophy || { icon: "🏆", name: "FOUND" },
+          };
+          showSolveCelebration(egg.value);
+          this.easterEggSubmission = "";
+          if (!this.easterEggRevealed) {
+            this.easterEggRevealed = true;
+          }
+          break;
+        } else if (resp.data.status === "already_solved") {
+          continue;
+        }
+      } catch (e) {
+        continue;
+      }
+    }
+
+    if (!found && !this.easterEggResponse) {
+      this.easterEggResponse = { status: "incorrect" };
+    }
+
+    this.easterEggSubmitting = false;
+    setTimeout(() => {
+      this.easterEggResponse = null;
+    }, 5000);
+  },
+
   enterZone(category) {
     this.activeCategory = category;
     this.selectedChallenge = null;
+    // Pre-check if easter eggs have been found
+    if (category === "Easter Eggs") {
+      this.easterEggRevealed = this.hasAnyEasterEggSolve();
+      this.easterEggSubmission = "";
+      this.easterEggResponse = null;
+      // Refresh egg data when entering the zone
+      this._loadEasterEggs();
+    }
     this.view = "zone";
     window.scrollTo({ top: 0, behavior: "smooth" });
   },
@@ -615,6 +735,12 @@ Alpine.data("ChallengeBoard", () => ({
         categories.push(category);
       }
     });
+
+    // Add Easter Eggs as a category if we have egg data (they're hidden
+    // from the main challenges list so won't appear naturally)
+    if (this._easterEggsLoaded && this._easterEggs.length > 0 && !categories.includes("Easter Eggs")) {
+      categories.push("Easter Eggs");
+    }
 
     try {
       const f = CTFd.config.themeSettings.challenge_category_order;
@@ -654,7 +780,8 @@ Alpine.data("ChallengeBoard", () => ({
   },
 
   async loadChallenges() {
-    this.challenges = await CTFd.pages.challenges.getChallenges();
+    const allChallenges = await CTFd.pages.challenges.getChallenges();
+    this.challenges = allChallenges.filter(c => c.category !== "Easter Eggs");
   },
 
   async loadChallenge(challengeId) {

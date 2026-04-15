@@ -14,6 +14,7 @@ export default defineConfig({
   build: {
     manifest: true,
     outDir: "static",
+    sourcemap: true,
     rollupOptions: {
       plugins: [
         copy({

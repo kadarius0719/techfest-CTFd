@@ -207,17 +207,19 @@ else
     if [ "$CHALLENGE_COUNT" -gt 0 ]; then
       # Get API token
       # Login first
-      NONCE=$(curl -sf -c /tmp/ctfd_cookies.txt http://localhost:8000/login | grep -o 'name="nonce" value="[^"]*"' | grep -o 'value="[^"]*"' | cut -d'"' -f2)
+      NONCE=$(curl -sf -c /tmp/ctfd_cookies.txt http://localhost:8000/login | sed -n 's/.*name="nonce"[^>]*value="\([^"]*\)".*/\1/p' | head -1)
       curl -sf -b /tmp/ctfd_cookies.txt -c /tmp/ctfd_cookies.txt \
         -X POST http://localhost:8000/login \
         -d "name=admin&password=admin&nonce=$NONCE&_submit=Submit" \
         -L -o /dev/null 2>/dev/null
 
-      # Generate API token
+      # Generate API token (with CSRF nonce)
+      CSRF=$(curl -sf -b /tmp/ctfd_cookies.txt http://localhost:8000/settings 2>/dev/null | sed -n "s/.*'csrfNonce':[[:space:]]*\"\([^\"]*\)\".*/\1/p" | head -1)
       TOKEN_RESP=$(curl -sf -b /tmp/ctfd_cookies.txt \
         -X POST http://localhost:8000/api/v1/tokens \
         -H "Content-Type: application/json" \
-        -d '{"description":"dev-setup","expiration":""}' 2>/dev/null)
+        -H "CSRF-Token: $CSRF" \
+        -d '{"description":"dev-setup","expiration":null}' 2>/dev/null)
       API_TOKEN=$(echo "$TOKEN_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['value'])" 2>/dev/null || echo "")
 
       if [ -z "$API_TOKEN" ]; then
