@@ -293,8 +293,19 @@ def import_challenges(token):
         warn(f"Challenge conversion failed: {e}")
         return
 
+    # Fetch existing challenges so we can update them if they already exist
+    log("Fetching existing challenges...")
+    existing_map = {}  # name -> id
+    code, resp = http_get_json("/api/v1/challenges?view=admin", token)
+    if code == 200 and "data" in resp:
+        for ec in resp["data"]:
+            existing_map[ec["name"]] = ec["id"]
+        if existing_map:
+            ok(f"Found {len(existing_map)} existing challenges")
+
     log(f"Importing {len(challenges)} challenges...")
     imported = 0
+    updated = 0
     skipped = 0
     failed = 0
 
@@ -303,8 +314,25 @@ def import_challenges(token):
         tags = c.pop("tags", [])
         hints = c.pop("hints", [])
         c.pop("files", [])
-        c.pop("requirements", None)
+        requirements = c.pop("requirements", None)
 
+        # Check if challenge already exists
+        existing_id = existing_map.get(c["name"])
+
+        if existing_id:
+            # Update existing challenge (description, points, category, etc.)
+            code, data = http_patch_json(
+                f"/api/v1/challenges/{existing_id}", c, token
+            )
+            if code == 200:
+                updated += 1
+                print(f"  {CYAN}↻{NC} {c['name']} (updated)", flush=True)
+            else:
+                failed += 1
+                print(f"  {RED}✗{NC} {c['name']}: update failed HTTP {code}", flush=True)
+            continue
+
+        # Create new challenge
         code, data = http_post_json("/api/v1/challenges", c, token=token)
 
         if code == 200:
@@ -331,7 +359,7 @@ def import_challenges(token):
             failed += 1
             print(f"  {RED}✗{NC} {c['name']}: HTTP {code}", flush=True)
 
-    ok(f"Import complete — {imported} new, {skipped} existing, {failed} failed")
+    ok(f"Import complete — {imported} new, {updated} updated, {skipped} skipped, {failed} failed")
 
 
 # ---------------------------------------------------------------------------
