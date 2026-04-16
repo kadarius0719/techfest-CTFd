@@ -16,6 +16,7 @@ Environment variables:
 """
 
 import json
+import mimetypes
 import os
 import re
 import subprocess
@@ -24,6 +25,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import uuid
 from http.cookiejar import CookieJar
 
 CTFD_URL = os.environ.get("CTFD_URL", "http://ctfd:8000").rstrip("/")
@@ -142,6 +144,57 @@ def http_patch_json(path, data, token):
         except Exception:
             body = {"error": str(e)}
         return e.code, body
+
+
+def http_post_multipart(path, fields, files, token=None):
+    """POST multipart/form-data with file uploads.
+
+    Args:
+        path: API path (e.g. "/api/v1/files")
+        fields: dict of form fields (e.g. {"challenge": 1, "type": "challenge"})
+        files: list of (field_name, filename, file_bytes) tuples
+        token: API auth token
+
+    Returns: (status_code, parsed_json)
+    """
+    boundary = f"----FormBoundary{uuid.uuid4().hex}"
+    body_parts = []
+
+    for key, value in fields.items():
+        body_parts.append(f"--{boundary}\r\n".encode())
+        body_parts.append(
+            f'Content-Disposition: form-data; name="{key}"\r\n\r\n'.encode()
+        )
+        body_parts.append(f"{value}\r\n".encode())
+
+    for field_name, filename, file_bytes in files:
+        content_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
+        body_parts.append(f"--{boundary}\r\n".encode())
+        body_parts.append(
+            f'Content-Disposition: form-data; name="{field_name}"; '
+            f'filename="{filename}"\r\n'.encode()
+        )
+        body_parts.append(f"Content-Type: {content_type}\r\n\r\n".encode())
+        body_parts.append(file_bytes)
+        body_parts.append(b"\r\n")
+
+    body_parts.append(f"--{boundary}--\r\n".encode())
+    body = b"".join(body_parts)
+
+    url = f"{CTFD_URL}{path}"
+    req = urllib.request.Request(url, data=body, method="POST")
+    req.add_header("Content-Type", f"multipart/form-data; boundary={boundary}")
+    if token:
+        req.add_header("Authorization", f"Token {token}")
+    try:
+        resp = opener.open(req)
+        return resp.status, json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        try:
+            resp_body = json.loads(e.read())
+        except Exception:
+            resp_body = {"error": str(e)}
+        return e.code, resp_body
 
 
 def extract_nonce(html):
@@ -267,6 +320,61 @@ def get_api_token():
 # Step 4: Import challenges
 # ---------------------------------------------------------------------------
 
+def upload_challenge_files(challenge_id, challenge_name, file_paths, token):
+    """Upload files for a challenge via CTFd's file API.
+
+    Args:
+        challenge_id: The CTFd challenge ID
+        challenge_name: Challenge name (for logging)
+        file_paths: List of relative paths (e.g. "cipher-quest/shift-happens/files/encrypted.txt")
+        token: API auth token
+
+    Returns: number of files successfully uploaded
+    """
+    if not file_paths:
+        return 0
+
+    # Check if challenge already has files (idempotency)
+    code, resp = http_get_json(f"/api/v1/challenges/{challenge_id}/files", token)
+    if code == 200 and resp.get("data") and len(resp["data"]) > 0:
+        return 0
+
+    uploaded = 0
+    print(
+        f"  \U0001F4CE Uploading {len(file_paths)} file(s) for {challenge_name}",
+        flush=True,
+    )
+
+    for rel_path in file_paths:
+        full_path = os.path.join(CHALLENGE_REPO, "categories", rel_path)
+
+        if not os.path.isfile(full_path):
+            warn(f"File not found, skipping: {full_path}")
+            continue
+
+        filename = os.path.basename(full_path)
+        try:
+            with open(full_path, "rb") as f:
+                file_bytes = f.read()
+        except OSError as e:
+            warn(f"Could not read {full_path}: {e}")
+            continue
+
+        code, resp = http_post_multipart(
+            "/api/v1/files",
+            fields={"challenge": str(challenge_id), "type": "challenge"},
+            files=[("file", filename, file_bytes)],
+            token=token,
+        )
+
+        if code == 200 and resp.get("success"):
+            uploaded += 1
+        else:
+            warn(f"Failed to upload {filename}: HTTP {code}")
+
+    return uploaded
+
+
 def import_challenges(token):
     log("Looking for challenge repo...")
 
@@ -308,12 +416,13 @@ def import_challenges(token):
     updated = 0
     skipped = 0
     failed = 0
+    total_files_uploaded = 0
 
     for c in challenges:
         flags = c.pop("flags", [])
         tags = c.pop("tags", [])
         hints = c.pop("hints", [])
-        c.pop("files", [])
+        files = c.pop("files", [])
         requirements = c.pop("requirements", None)
 
         # Check if challenge already exists
@@ -327,6 +436,11 @@ def import_challenges(token):
             if code == 200:
                 updated += 1
                 print(f"  {CYAN}↻{NC} {c['name']} (updated)", flush=True)
+                # Upload files for existing challenge (skips if already present)
+                if files:
+                    total_files_uploaded += upload_challenge_files(
+                        existing_id, c["name"], files, token
+                    )
             else:
                 failed += 1
                 print(f"  {RED}✗{NC} {c['name']}: update failed HTTP {code}", flush=True)
@@ -349,6 +463,12 @@ def import_challenges(token):
                 hint["challenge_id"] = cid
                 http_post_json("/api/v1/hints", hint, token=token)
 
+            # Upload challenge files
+            if files:
+                total_files_uploaded += upload_challenge_files(
+                    cid, c["name"], files, token
+                )
+
             imported += 1
             print(f"  {GREEN}✓{NC} {c['name']} ({c['category']}, {c['value']} pts)", flush=True)
 
@@ -360,6 +480,8 @@ def import_challenges(token):
             print(f"  {RED}✗{NC} {c['name']}: HTTP {code}", flush=True)
 
     ok(f"Import complete — {imported} new, {updated} updated, {skipped} skipped, {failed} failed")
+    if total_files_uploaded > 0:
+        ok(f"Uploaded {total_files_uploaded} challenge file(s) total")
 
 
 # ---------------------------------------------------------------------------
