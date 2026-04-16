@@ -1045,6 +1045,20 @@ hr {
 }
 
 // ~~~ Responsive ~~~
+
+// Tablets / small laptops
+@media (max-width: 1200px) {
+  .cat-name { font-size: 0.5rem; letter-spacing: 1.5px; }
+  .cat-icon { font-size: 1.6rem; }
+  .cat-count { font-size: 0.95rem; }
+  .pacman-wrap { width: 24px; height: 24px; }
+  .pacman { width: 24px; height: 24px; }
+  .pac-top, .pac-bot { width: 24px; height: 12px; }
+  .pac-top { border-radius: 12px 12px 0 0; }
+  .pac-bot { border-radius: 0 0 12px 12px; }
+}
+
+// Small tablets / large phones (landscape)
 @media (max-width: 768px) {
   .maze-viewport { height: calc(100vh - 48px); }
   .cat-name { font-size: 0.35rem; letter-spacing: 1px; }
@@ -1055,6 +1069,26 @@ hr {
   .pac-top, .pac-bot { width: 20px; height: 10px; }
   .pac-top { border-radius: 10px 10px 0 0; }
   .pac-bot { border-radius: 0 0 10px 10px; }
+  .maze-cat-btn { padding: 0.15rem 0.3rem; }
+  .maze-cat-btn::before { width: 18px; height: 18px; }
+  .maze-cat-btn::after { width: 10px; height: 10px; }
+}
+
+// Phones (portrait)
+@media (max-width: 480px) {
+  .maze-viewport { height: calc(100vh - 44px); }
+  .cat-name { font-size: 0.3rem; letter-spacing: 0.5px; }
+  .cat-icon { font-size: 0.85rem; }
+  .cat-count { font-size: 0.6rem; }
+  .pacman-wrap { width: 16px; height: 16px; }
+  .pacman { width: 16px; height: 16px; }
+  .pac-top, .pac-bot { width: 16px; height: 8px; }
+  .pac-top { border-radius: 8px 8px 0 0; }
+  .pac-bot { border-radius: 0 0 8px 8px; }
+  .pac-top::after { width: 3px; height: 3px; top: 2px; right: 5px; }
+  .maze-cat-btn { padding: 0.1rem 0.2rem; }
+  .maze-cat-btn::before { width: 14px; height: 14px; }
+  .maze-cat-btn::after { width: 8px; height: 8px; }
 }
 
 // ================================================================

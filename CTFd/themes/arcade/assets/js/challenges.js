@@ -401,6 +401,13 @@ Alpine.data("ChallengeBoard", () => ({
 
     this.loaded = true;
 
+    // Sync the HTML overlay to the SVG content area (handles letterboxing)
+    this.$nextTick(() => {
+      this._syncOverlay();
+      this._boundSyncOverlay = () => this._syncOverlay();
+      window.addEventListener("resize", this._boundSyncOverlay);
+    });
+
     if (window.location.hash) {
       let chalHash = decodeURIComponent(window.location.hash.substring(1));
       let idx = chalHash.lastIndexOf("-");
@@ -538,6 +545,45 @@ Alpine.data("ChallengeBoard", () => ({
         pellet.style.transformOrigin = `${cx}px ${cy}px`;
       }
     });
+  },
+
+  // Sync the HTML overlay div to match the SVG's actual rendered content area.
+  // The SVG uses preserveAspectRatio="xMidYMid meet" which letterboxes when
+  // the container aspect ratio doesn't match 2:1 (1400x700). Without this,
+  // percentage-positioned buttons drift away from their SVG nodes.
+  _syncOverlay() {
+    const svg = document.querySelector('.maze-svg');
+    const overlay = document.querySelector('.maze-overlay');
+    if (!svg || !overlay) return;
+
+    const rect = svg.getBoundingClientRect();
+    const cw = rect.width;
+    const ch = rect.height;
+    if (cw === 0 || ch === 0) return; // element hidden
+
+    const svgRatio = 1400 / 700; // 2:1
+    const containerRatio = cw / ch;
+
+    let contentW, contentH, offsetX, offsetY;
+
+    if (containerRatio > svgRatio) {
+      // Container wider than SVG — height-limited, horizontal letterboxing
+      contentH = ch;
+      contentW = ch * svgRatio;
+      offsetX = (cw - contentW) / 2;
+      offsetY = 0;
+    } else {
+      // Container taller than SVG — width-limited, vertical letterboxing
+      contentW = cw;
+      contentH = cw / svgRatio;
+      offsetX = 0;
+      offsetY = (ch - contentH) / 2;
+    }
+
+    overlay.style.left = offsetX + 'px';
+    overlay.style.top = offsetY + 'px';
+    overlay.style.width = contentW + 'px';
+    overlay.style.height = contentH + 'px';
   },
 
   // Reset all eaten pellets (called on page load and when returning to map)
@@ -719,8 +765,11 @@ Alpine.data("ChallengeBoard", () => ({
     this._currentCategory = this.activeCategory;
     this.activeCategory = null;
     this.view = "overworld";
-    // Reset pellets so they reappear fresh
-    this.$nextTick(() => this._resetPellets());
+    // Reset pellets and re-sync overlay to SVG content area
+    this.$nextTick(() => {
+      this._resetPellets();
+      this._syncOverlay();
+    });
   },
 
   // --- Original methods (unchanged) ---
