@@ -107,6 +107,24 @@ def http_post_json(path, data, token=None):
         return e.code, body
 
 
+def http_get_json(path, token=None):
+    """GET JSON, returns (status_code, parsed_json)."""
+    url = f"{CTFD_URL}{path}"
+    req = urllib.request.Request(url, method="GET")
+    req.add_header("Content-Type", "application/json")
+    if token:
+        req.add_header("Authorization", f"Token {token}")
+    try:
+        resp = opener.open(req)
+        return resp.status, json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        try:
+            body = json.loads(e.read())
+        except Exception:
+            body = {"error": str(e)}
+        return e.code, body
+
+
 def http_patch_json(path, data, token):
     """PATCH JSON, returns (status_code, parsed_json)."""
     url = f"{CTFD_URL}{path}"
@@ -119,7 +137,11 @@ def http_patch_json(path, data, token):
         resp = opener.open(req)
         return resp.status, json.loads(resp.read())
     except urllib.error.HTTPError as e:
-        return e.code, {}
+        try:
+            body = json.loads(e.read())
+        except Exception:
+            body = {"error": str(e)}
+        return e.code, body
 
 
 def extract_nonce(html):
@@ -216,18 +238,13 @@ def get_api_token():
         "_submit": "Submit",
     })
 
-    # Get CSRF from settings
+    # Get CSRF from settings page (proves login succeeded)
     code, body = http_get("/settings")
     csrf = extract_csrf_nonce(body)
     if not csrf:
         fail("Login failed — could not reach settings page. Check admin credentials.")
 
-    # Create API token
-    code, data = http_post_json("/api/v1/tokens", {
-        "description": "docker-init",
-        "expiration": None,
-    })
-    # The CSRF token needs to be sent as a header for session-based auth
+    # Create API token (session auth requires CSRF-Token header)
     url = f"{CTFD_URL}/api/v1/tokens"
     req = urllib.request.Request(
         url,
@@ -343,14 +360,60 @@ LANDING_PAGE_HTML = (
 def sync_config(token):
     log("Syncing platform config...")
 
-    http_patch_json("/api/v1/configs/ctf_name", {"value": "TechFest 2026"}, token)
-    ok("CTF name: TechFest 2026")
+    code, _ = http_patch_json("/api/v1/configs/ctf_name", {"value": "TechFest 2026"}, token)
+    if code == 200:
+        ok("CTF name: TechFest 2026")
+    else:
+        warn(f"Failed to set CTF name (HTTP {code})")
 
-    http_patch_json("/api/v1/configs/ctf_theme", {"value": "arcade"}, token)
-    ok("Theme: arcade")
+    code, _ = http_patch_json("/api/v1/configs/ctf_theme", {"value": "arcade"}, token)
+    if code == 200:
+        ok("Theme: arcade")
+    else:
+        warn(f"Failed to set theme (HTTP {code})")
 
-    http_patch_json("/api/v1/pages/1", {"content": LANDING_PAGE_HTML}, token)
-    ok("Landing page configured")
+    # Find the landing page by route instead of assuming ID 1
+    page_id = find_index_page(token)
+    if page_id:
+        code, _ = http_patch_json(
+            f"/api/v1/pages/{page_id}",
+            {"content": LANDING_PAGE_HTML, "format": "html"},
+            token,
+        )
+        if code == 200:
+            ok("Landing page configured")
+        else:
+            warn(f"Failed to update landing page (HTTP {code})")
+    else:
+        # No index page exists — create one
+        log("No index page found, creating one...")
+        code, data = http_post_json("/api/v1/pages", {
+            "title": "TechFest 2026",
+            "route": "index",
+            "content": LANDING_PAGE_HTML,
+            "format": "html",
+            "draft": False,
+            "hidden": False,
+            "auth_required": False,
+        }, token=token)
+        if code == 200:
+            ok("Landing page created")
+        else:
+            warn(f"Failed to create landing page (HTTP {code}, {data})")
+
+
+def find_index_page(token):
+    """Find the page with route='index', return its ID or None."""
+    code, data = http_get_json("/api/v1/pages?type=page", token)
+    if code != 200 or "data" not in data:
+        warn(f"Could not list pages (HTTP {code})")
+        return None
+
+    for page in data["data"]:
+        if page.get("route") == "index":
+            return page["id"]
+
+    return None
 
 
 # ---------------------------------------------------------------------------

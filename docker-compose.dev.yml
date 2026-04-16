@@ -7,6 +7,4 @@
 services:
   ctfd:
     volumes:
-      - .data/CTFd/logs:/var/log/CTFd
-      - .data/CTFd/uploads:/var/uploads
       - .:/opt/CTFd:ro
