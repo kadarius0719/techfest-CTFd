@@ -552,18 +552,60 @@ def sync_config(token):
             warn(f"Failed to create landing page (HTTP {code}, {data})")
 
 
-def find_index_page(token):
-    """Find the page with route='index', return its ID or None."""
+def find_page_by_route(route, token):
+    """Find a page by its route, return its ID or None."""
     code, data = http_get_json("/api/v1/pages?type=page", token)
     if code != 200 or "data" not in data:
         warn(f"Could not list pages (HTTP {code})")
         return None
 
     for page in data["data"]:
-        if page.get("route") == "index":
+        if page.get("route") == route:
             return page["id"]
 
     return None
+
+
+def find_index_page(token):
+    """Back-compat wrapper for the index page lookup."""
+    return find_page_by_route("index", token)
+
+
+def sync_rules_page(token):
+    """Create or update the /rules page from pages/rules.md in the challenge repo."""
+    rules_md_path = os.path.join(CHALLENGE_REPO, "pages", "rules.md")
+    if not os.path.isfile(rules_md_path):
+        warn(f"No rules.md at {rules_md_path}; skipping rules page sync")
+        return
+
+    with open(rules_md_path, "r", encoding="utf-8") as f:
+        rules_content = f.read()
+
+    page_id = find_page_by_route("rules", token)
+    if page_id:
+        code, _ = http_patch_json(
+            f"/api/v1/pages/{page_id}",
+            {"content": rules_content, "format": "markdown"},
+            token,
+        )
+        if code == 200:
+            ok("Rules page updated")
+        else:
+            warn(f"Failed to update rules page (HTTP {code})")
+    else:
+        code, data = http_post_json("/api/v1/pages", {
+            "title": "Rules of Engagement",
+            "route": "rules",
+            "content": rules_content,
+            "format": "markdown",
+            "draft": False,
+            "hidden": False,
+            "auth_required": False,
+        }, token=token)
+        if code == 200:
+            ok("Rules page created at /rules")
+        else:
+            warn(f"Failed to create rules page (HTTP {code}, {data})")
 
 
 # ---------------------------------------------------------------------------
@@ -580,6 +622,7 @@ def main():
     token = get_api_token()
     import_challenges(token)
     sync_config(token)
+    sync_rules_page(token)
 
     print(f"\n{GREEN}  ✓ Init complete!{NC}")
     print(f"  {CYAN}Platform:{NC}  {CTFD_URL}")

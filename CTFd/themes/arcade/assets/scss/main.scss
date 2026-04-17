@@ -2435,3 +2435,301 @@ hr {
      TECHFEST{css_art_gallery_hidden_in_the_stylesheet}
 
    ================================================================ */
+
+/* ================================================================
+   ARCADE CABINET CHASSIS
+   Wraps the UI in a pixelated arcade cabinet frame.
+   Activated by body.cabinet-mode (toggle in base.html).
+   Only renders on screens ≥ 1400px wide to avoid crowding.
+   All decorations use pointer-events: none so they never block clicks.
+   ================================================================ */
+
+.cabinet-toggle {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 1000;
+  padding: 6px 14px;
+  background: rgba(6, 6, 14, 0.85);
+  border: 1px solid rgba($cyber-cyan, 0.4);
+  color: $cyber-cyan;
+  font-family: 'VT323', monospace;
+  font-size: 0.95rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba($cyber-cyan, 0.15);
+    box-shadow: 0 0 12px rgba($cyber-cyan, 0.4);
+  }
+}
+
+/* Cabinet chrome — only on wide screens */
+@media (min-width: 1400px) {
+  body.cabinet-mode {
+    // Give content room for marquee + control panel
+    padding-top: 68px;
+    padding-bottom: 56px;
+    // Side rails eat some horizontal space
+    padding-left: 42px;
+    padding-right: 42px;
+    background: radial-gradient(ellipse at center, #0c0c1d 0%, #06060e 70%) fixed;
+
+    // Top marquee — glowing title bar
+    &::before {
+      content: 'TECHFEST 2026 — CYBERPUNK ARCADE';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 58px;
+      z-index: 998;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 10px;
+      color: $cyber-cyan;
+      text-shadow: 0 0 18px $cyber-cyan, 0 0 36px rgba($cyber-cyan, 0.5);
+      background: linear-gradient(180deg, #1a0a2e 0%, #0f0518 60%, transparent 100%);
+      border-bottom: 3px double rgba($cyber-pink, 0.5);
+      box-shadow: inset 0 -12px 20px rgba($cyber-pink, 0.15), 0 2px 10px rgba(0, 0, 0, 0.6);
+      animation: marquee-pulse 4s ease-in-out infinite;
+    }
+
+    // Bottom control panel — joystick + buttons
+    &::after {
+      content: '◉  ◎  ◎  ◎      ◄ ▲ ► ▼      ◎  ◎  ◎  ◉';
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 46px;
+      z-index: 998;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Press Start 2P', 'Orbitron', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 8px;
+      color: rgba($cyber-orange, 0.8);
+      text-shadow: 0 0 8px rgba($cyber-orange, 0.6);
+      background: linear-gradient(0deg, #140519 0%, #0a0212 60%, transparent 100%);
+      border-top: 3px double rgba($cyber-cyan, 0.4);
+      box-shadow: inset 0 12px 20px rgba($cyber-cyan, 0.1);
+    }
+  }
+
+  // Side rails via a separate element injected by base.html
+  body.cabinet-mode .cabinet-rail {
+    position: fixed;
+    top: 58px;
+    bottom: 46px;
+    width: 42px;
+    z-index: 997;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      180deg,
+      #12122a 0px,
+      #12122a 4px,
+      #1a1a3a 4px,
+      #1a1a3a 8px
+    );
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      background: linear-gradient(
+        180deg,
+        transparent 0%,
+        $cyber-pink 15%,
+        $cyber-cyan 50%,
+        $cyber-pink 85%,
+        transparent 100%
+      );
+      opacity: 0.4;
+      box-shadow: 0 0 6px $cyber-cyan;
+    }
+  }
+  body.cabinet-mode .cabinet-rail.cabinet-rail-left { left: 0; }
+  body.cabinet-mode .cabinet-rail.cabinet-rail-right { right: 0; }
+
+  // Coin slot accent in the top-right corner of the marquee
+  body.cabinet-mode .cabinet-coinslot {
+    position: fixed;
+    top: 14px;
+    right: 24px;
+    z-index: 999;
+    pointer-events: none;
+    font-family: 'VT323', monospace;
+    font-size: 0.7rem;
+    color: rgba($cyber-green, 0.75);
+    letter-spacing: 1.5px;
+
+    &::before {
+      content: '▮';
+      display: inline-block;
+      margin-right: 6px;
+      color: rgba($cyber-green, 0.4);
+      font-size: 0.9rem;
+    }
+  }
+}
+
+@keyframes marquee-pulse {
+  0%, 100% {
+    text-shadow: 0 0 18px $cyber-cyan, 0 0 36px rgba($cyber-cyan, 0.5);
+  }
+  50% {
+    text-shadow: 0 0 24px $cyber-cyan, 0 0 48px rgba($cyber-pink, 0.6);
+  }
+}
+
+/* ================================================================
+   ATTRACT MODE
+   Full-screen demo overlay that kicks in after idle on the landing page.
+   Cycles through 4 slides, any click/keypress dismisses.
+   ================================================================ */
+
+#attract-mode {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(6, 6, 14, 0.96);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+
+  &.active {
+    display: flex;
+    opacity: 1;
+  }
+
+  .attract-slide {
+    display: none;
+    text-align: center;
+    padding: 2rem;
+    max-width: 900px;
+  }
+  .attract-slide.active {
+    display: block;
+    animation: attract-slide-in 0.5s ease-out;
+  }
+
+  .attract-label {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    font-family: 'VT323', monospace;
+    color: rgba($cyber-green, 0.7);
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    animation: attract-blink 1.4s ease-in-out infinite;
+  }
+
+  .attract-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: $cyber-cyan;
+    letter-spacing: 8px;
+    text-shadow: 0 0 30px $cyber-cyan, 0 0 60px rgba($cyber-pink, 0.6);
+    margin-bottom: 1rem;
+  }
+
+  .attract-tagline {
+    font-family: 'VT323', monospace;
+    font-size: 1.8rem;
+    color: $cyber-pink;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+  }
+
+  .attract-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    margin-top: 2rem;
+  }
+
+  .attract-stat-num {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 5rem;
+    color: $cyber-green;
+    text-shadow: 0 0 20px $cyber-green;
+    line-height: 1;
+  }
+
+  .attract-stat-label {
+    font-family: 'VT323', monospace;
+    font-size: 1.3rem;
+    color: #8a8aa6;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+  }
+
+  .attract-insert-coin {
+    font-family: 'Press Start 2P', 'Orbitron', sans-serif;
+    font-size: 2.5rem;
+    color: $cyber-orange;
+    text-shadow: 0 0 25px $cyber-orange;
+    letter-spacing: 6px;
+    animation: attract-blink 0.8s ease-in-out infinite;
+  }
+
+  .attract-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'VT323', monospace;
+    color: #4a4a6a;
+    font-size: 1rem;
+    letter-spacing: 2px;
+  }
+
+  .attract-zones {
+    font-family: 'VT323', monospace;
+    font-size: 1.6rem;
+    color: $cyber-cyan;
+    letter-spacing: 3px;
+    line-height: 2.2;
+
+    span {
+      display: inline-block;
+      padding: 0 1.2rem;
+      color: #c0c0e0;
+    }
+    span + span {
+      border-left: 1px solid rgba($cyber-cyan, 0.3);
+    }
+  }
+}
+
+@keyframes attract-slide-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes attract-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}

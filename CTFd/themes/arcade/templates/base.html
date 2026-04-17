@@ -67,7 +67,141 @@
 
   {{ Configs.theme_header }}
 </head>
-<body>
+<body class="cabinet-mode">
+
+<!-- ============================================================ -->
+<!-- ARCADE CABINET CHASSIS (wide-screen only, see main.scss)     -->
+<!-- ============================================================ -->
+<div class="cabinet-rail cabinet-rail-left" aria-hidden="true"></div>
+<div class="cabinet-rail cabinet-rail-right" aria-hidden="true"></div>
+<div class="cabinet-coinslot" aria-hidden="true">INSERT COIN</div>
+<button type="button" class="cabinet-toggle" id="cabinet-toggle" title="Toggle arcade cabinet frame">
+  [CABINET: ON]
+</button>
+
+<!-- ============================================================ -->
+<!-- ATTRACT MODE OVERLAY (landing page only, kicks in after idle) -->
+<!-- ============================================================ -->
+<div id="attract-mode" role="dialog" aria-hidden="true">
+  <div class="attract-label">DEMO // ATTRACT MODE</div>
+
+  <div class="attract-slide active" data-slide="0">
+    <div class="attract-title">TECHFEST 2026</div>
+    <div class="attract-tagline">Cyberpunk Arcade // Capture the Flag</div>
+  </div>
+
+  <div class="attract-slide" data-slide="1">
+    <div class="attract-title" style="font-size: 2.5rem; color: #39ff14;">THE ZONES</div>
+    <div class="attract-zones">
+      <span>TUTORIAL</span><span>CIPHER</span><span>DATA</span><br>
+      <span>PACKET</span><span>CODE</span><span>WEB</span><br>
+      <span>FORTRESS</span><span>AI</span><span>BONUS</span>
+    </div>
+  </div>
+
+  <div class="attract-slide" data-slide="2">
+    <div class="attract-title" style="font-size: 2.8rem;">THE RUN</div>
+    <div class="attract-stat-grid">
+      <div>
+        <div class="attract-stat-num">94</div>
+        <div class="attract-stat-label">Challenges</div>
+      </div>
+      <div>
+        <div class="attract-stat-num">9</div>
+        <div class="attract-stat-label">Zones</div>
+      </div>
+      <div>
+        <div class="attract-stat-num">∞</div>
+        <div class="attract-stat-label">Glory</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="attract-slide" data-slide="3">
+    <div class="attract-insert-coin">INSERT COIN TO PLAY</div>
+    <div style="margin-top: 2rem; font-family: 'VT323', monospace; font-size: 1.3rem; color: #c0c0e0; letter-spacing: 3px;">
+      &gt; Press any key to jack in
+    </div>
+  </div>
+
+  <div class="attract-hint">click anywhere or press any key to continue</div>
+</div>
+
+<script type="text/javascript">
+// Cabinet toggle — persists preference in localStorage
+(function() {
+  var body = document.body;
+  var btn = document.getElementById('cabinet-toggle');
+  var saved = localStorage.getItem('techfest-cabinet');
+  if (saved === 'off') body.classList.remove('cabinet-mode');
+  function sync() {
+    var on = body.classList.contains('cabinet-mode');
+    btn.textContent = on ? '[CABINET: ON]' : '[CABINET: OFF]';
+  }
+  sync();
+  btn.addEventListener('click', function() {
+    body.classList.toggle('cabinet-mode');
+    var now = body.classList.contains('cabinet-mode') ? 'on' : 'off';
+    localStorage.setItem('techfest-cabinet', now);
+    sync();
+  });
+})();
+
+// Attract mode — landing page only, 30s idle trigger, 4 slides × 5s each
+(function() {
+  var pathname = window.location.pathname;
+  var isLanding = pathname === '/' || pathname === '/index' || pathname === '';
+  if (!isLanding) return;
+
+  var overlay = document.getElementById('attract-mode');
+  if (!overlay) return;
+  var slides = overlay.querySelectorAll('.attract-slide');
+  var idleTimer = null;
+  var slideTimer = null;
+  var current = 0;
+  var IDLE_MS = 30000;
+  var SLIDE_MS = 5000;
+
+  function showSlide(idx) {
+    slides.forEach(function(s, i) {
+      s.classList.toggle('active', i === idx);
+    });
+    current = idx;
+  }
+
+  function startAttract() {
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+    showSlide(0);
+    slideTimer = setInterval(function() {
+      showSlide((current + 1) % slides.length);
+    }, SLIDE_MS);
+  }
+
+  function stopAttract() {
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden', 'true');
+    if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
+    resetIdle();
+  }
+
+  function resetIdle() {
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(startAttract, IDLE_MS);
+  }
+
+  ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(function(ev) {
+    document.addEventListener(ev, function() {
+      if (overlay.classList.contains('active')) {
+        stopAttract();
+      } else {
+        resetIdle();
+      }
+    }, { passive: true });
+  });
+  resetIdle();
+})();
+</script>
 
 <!-- ============================================================ -->
 <!-- ANIMATED DATA RAIN CANVAS (behind everything)                -->
@@ -161,6 +295,10 @@
   <div class="container text-center">
     <small class="text-muted">
       TechFest 2026 // Cyberpunk Arcade Edition
+      <span class="footer-sep" style="margin: 0 0.75rem; color: #3a3a5a;">|</span>
+      <a href="/rules" style="color: #00f0ff; text-decoration: none; font-family: 'VT323', monospace; letter-spacing: 1px;">
+        Rules of Engagement
+      </a>
     </small>
   </div>
 </footer>

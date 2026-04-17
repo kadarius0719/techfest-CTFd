@@ -76,13 +76,50 @@
 
             {{ render_extra_fields(form.extra) }}
 
+            <!-- Rules of Engagement acknowledgment -->
+            <div class="mb-3 mt-4 rules-ack" style="padding: 1rem; background: rgba(0, 240, 255, 0.05); border: 1px dashed rgba(0, 240, 255, 0.4); border-radius: 4px;">
+              <label class="form-check" style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer;">
+                <input type="checkbox"
+                       id="rules-accept"
+                       name="rules_accepted"
+                       value="yes"
+                       required
+                       style="margin-top: 0.35rem; accent-color: #00f0ff; min-width: 18px; min-height: 18px;">
+                <span style="font-family: 'VT323', monospace; color: #c0c0e0; font-size: 1.1rem; line-height: 1.4;">
+                  I have read and agree to the
+                  <a href="/rules" target="_blank" style="color: #00f0ff; text-decoration: underline;">
+                    Rules of Engagement
+                  </a>
+                  <span style="color: #ff003c;">*</span>
+                  <br>
+                  <small style="color: #4a4a6a;">
+                    &gt; Authorized targets only. No DoS. Respect other teams. Full rules linked above.
+                  </small>
+                </span>
+              </label>
+            </div>
+
             <div class="row pt-3">
               <div class="col-6 col-md-4 offset-6 offset-md-8">
-                <button type="submit" class="btn btn-primary w-100">
+                <button type="submit" id="register-submit" class="btn btn-primary w-100" disabled>
                   INITIALIZE
                 </button>
               </div>
             </div>
+
+            <script type="text/javascript">
+            (function() {
+              var checkbox = document.getElementById('rules-accept');
+              var button = document.getElementById('register-submit');
+              function sync() {
+                button.disabled = !checkbox.checked;
+                button.style.opacity = checkbox.checked ? '1' : '0.4';
+                button.style.cursor = checkbox.checked ? 'pointer' : 'not-allowed';
+              }
+              checkbox.addEventListener('change', sync);
+              sync();
+            })();
+            </script>
 
             {% if Configs.tos_or_privacy %}
               <div class="row pt-3">
