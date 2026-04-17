@@ -2502,29 +2502,91 @@ hr {
       animation: marquee-pulse 4s ease-in-out infinite;
     }
 
-    // Bottom control panel — joystick + buttons
-    &::after {
-      content: '◉  ◎  ◎  ◎      ◄ ▲ ► ▼      ◎  ◎  ◎  ◉';
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 46px;
-      z-index: 998;
-      pointer-events: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Press Start 2P', 'Orbitron', sans-serif;
-      font-size: 1.2rem;
-      letter-spacing: 8px;
-      color: rgba($cyber-orange, 0.8);
-      text-shadow: 0 0 8px rgba($cyber-orange, 0.6);
-      background: linear-gradient(0deg, #140519 0%, #0a0212 60%, transparent 100%);
-      border-top: 3px double rgba($cyber-cyan, 0.4);
-      box-shadow: inset 0 12px 20px rgba($cyber-cyan, 0.1);
+  }
+
+  // Bottom control panel — "peering through arcade glass" effect.
+  // Subtle, low-contrast, feels like part of the cabinet chassis
+  // rather than a bright UI element in front of the content.
+  body.cabinet-mode .cabinet-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 46px;
+    z-index: 998;
+    pointer-events: none;
+    // Darker, more atmospheric — you're looking PAST it
+    background:
+      linear-gradient(180deg, transparent 0%, rgba(6, 6, 14, 0.85) 35%, rgba(4, 4, 10, 0.95) 100%);
+    border-top: 1px solid rgba($cyber-cyan, 0.2);
+    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4rem;
+    // Whole panel receives a slight blur and opacity to recede into depth
+    opacity: 0.55;
+    filter: blur(0.4px);
+  }
+
+  body.cabinet-mode .cabinet-joystick {
+    height: 32px;
+    filter: drop-shadow(0 0 4px rgba($cyber-pink, 0.25));
+    animation: joystick-sway 6s ease-in-out infinite;
+    transform-origin: 50% 85%;
+  }
+
+  body.cabinet-mode .cabinet-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'VT323', monospace;
+    color: rgba($cyber-green, 0.55);
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-shadow: 0 0 4px rgba($cyber-green, 0.3);
+
+    .cabinet-label-sub {
+      color: rgba($cyber-orange, 0.5);
+      letter-spacing: 1px;
+      font-size: 0.8rem;
     }
   }
+
+  body.cabinet-mode .cabinet-buttons {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+  }
+
+  body.cabinet-mode .cabinet-btn {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, currentColor 45%, rgba(0,0,0,0.7) 100%);
+    box-shadow:
+      inset 0 -2px 3px rgba(0, 0, 0, 0.6),
+      inset 0 1px 2px rgba(255, 255, 255, 0.15),
+      0 0 6px currentColor;
+    position: relative;
+    animation: button-pulse 3s ease-in-out infinite;
+
+    // Thin dark bezel — keeps buttons looking recessed
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #2a2a3a 0%, #1a1a2a 60%, #0a0a10 100%);
+      z-index: -1;
+      box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.8);
+    }
+  }
+
+  body.cabinet-mode .cabinet-btn-pink   { color: $cyber-pink;   animation-delay: 0s;   }
+  body.cabinet-mode .cabinet-btn-cyan   { color: $cyber-cyan;   animation-delay: 0.4s; }
+  body.cabinet-mode .cabinet-btn-green  { color: $cyber-green;  animation-delay: 0.8s; }
+  body.cabinet-mode .cabinet-btn-orange { color: $cyber-orange; animation-delay: 1.2s; }
 
   // Side rails via a separate element injected by base.html
   body.cabinet-mode .cabinet-rail {
@@ -2594,6 +2656,30 @@ hr {
   }
   50% {
     text-shadow: 0 0 24px $cyber-cyan, 0 0 48px rgba($cyber-pink, 0.6);
+  }
+}
+
+// Joystick gently sways left-right like a player is idling on it
+@keyframes joystick-sway {
+  0%, 100% { transform: rotate(-4deg); }
+  25%      { transform: rotate(3deg); }
+  50%      { transform: rotate(-2deg); }
+  75%      { transform: rotate(5deg); }
+}
+
+// Buttons breathe with a subtle glow pulse, staggered via animation-delay
+@keyframes button-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 -2px 3px rgba(0, 0, 0, 0.6),
+      inset 0 1px 2px rgba(255, 255, 255, 0.15),
+      0 0 4px currentColor;
+  }
+  50% {
+    box-shadow:
+      inset 0 -2px 3px rgba(0, 0, 0, 0.6),
+      inset 0 1px 2px rgba(255, 255, 255, 0.15),
+      0 0 9px currentColor;
   }
 }
 
