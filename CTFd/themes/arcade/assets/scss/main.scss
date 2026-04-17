@@ -2445,24 +2445,26 @@ hr {
    ================================================================ */
 
 .cabinet-toggle {
+  // Top-right corner, out of the way of the bottom control deck
   position: fixed;
-  bottom: 16px;
-  left: 16px;
-  z-index: 1000;
-  padding: 6px 14px;
-  background: rgba(6, 6, 14, 0.85);
-  border: 1px solid rgba($cyber-cyan, 0.4);
-  color: $cyber-cyan;
+  top: 14px;
+  right: 16px;
+  z-index: 1001;
+  padding: 4px 10px;
+  background: rgba(6, 6, 14, 0.75);
+  border: 1px solid rgba($cyber-cyan, 0.35);
+  color: rgba($cyber-cyan, 0.7);
   font-family: 'VT323', monospace;
-  font-size: 0.95rem;
-  letter-spacing: 2px;
+  font-size: 0.8rem;
+  letter-spacing: 1.5px;
   cursor: pointer;
   text-transform: uppercase;
   transition: all 0.2s ease;
 
   &:hover {
     background: rgba($cyber-cyan, 0.15);
-    box-shadow: 0 0 12px rgba($cyber-cyan, 0.4);
+    color: $cyber-cyan;
+    box-shadow: 0 0 8px rgba($cyber-cyan, 0.4);
   }
 }
 
@@ -2487,7 +2489,7 @@ hr {
   body.cabinet-mode {
     // Give content room for marquee + control panel
     padding-top: 68px;
-    padding-bottom: 82px;
+    padding-bottom: 102px;
     // Side rails eat some horizontal space
     padding-left: 42px;
     padding-right: 42px;
@@ -2520,106 +2522,89 @@ hr {
 
   }
 
-  // Bottom control panel — feels like a real arcade cabinet's control deck
-  // you're looking down past. Dark metal, top edge fades into the screen
-  // content above so it blends rather than stamps a hard line.
+  // Bottom control panel — real arcade layout: joystick LEFT, buttons RIGHT.
+  // Top edge fades into the screen content above so it feels like part of the
+  // cabinet chassis you're looking past.
   body.cabinet-mode .cabinet-controls {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 72px;
+    height: 92px;
     z-index: 998;
     pointer-events: none;
     // Metal-panel gradient: fades in from above, solid dark at the bottom
     background:
       linear-gradient(180deg,
         transparent 0%,
-        rgba(20, 12, 30, 0.55) 25%,
-        rgba(10, 8, 18, 0.92) 55%,
+        rgba(20, 12, 30, 0.55) 20%,
+        rgba(10, 8, 18, 0.92) 50%,
         #0a0612 100%
       ),
       // Subtle brushed-metal horizontal noise for texture
       repeating-linear-gradient(90deg,
-        rgba(50, 40, 70, 0.05) 0px,
-        rgba(50, 40, 70, 0.05) 1px,
+        rgba(50, 40, 70, 0.06) 0px,
+        rgba(50, 40, 70, 0.06) 1px,
         transparent 1px,
         transparent 3px
       );
     border-top: 1px solid rgba($cyber-cyan, 0.25);
-    box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.6);
+    box-shadow: inset 0 12px 24px rgba(0, 0, 0, 0.6);
+    // Real arcade CP layout: joystick left, buttons right, everything
+    // aligned to the bottom of the panel (resting on the plate)
     display: flex;
     align-items: flex-end;
-    padding: 0 3rem 10px 6rem;
-    gap: 2.5rem;
+    justify-content: space-between;
+    padding: 0 8rem 12px 8rem;
   }
 
-  // The LEFT cluster — joystick + 6 buttons grouped like a real P1 panel
-  body.cabinet-mode .cabinet-cluster {
-    display: flex;
-    align-items: center;
-    gap: 22px;
-  }
-
+  // Left: joystick in its own well
   body.cabinet-mode .cabinet-joystick {
-    height: 50px;
-    filter: drop-shadow(0 0 6px rgba($cyber-pink, 0.45));
+    height: 72px;
+    filter: drop-shadow(0 0 10px rgba($cyber-pink, 0.5));
     animation: joystick-sway 6s ease-in-out infinite;
     transform-origin: 50% 85%;
   }
 
-  // Six buttons in 2 rows × 3 cols — authentic arcade button layout
+  // Right: six buttons in 2 rows × 3 cols (Street Fighter / classic fighting layout)
   body.cabinet-mode .cabinet-buttons {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-auto-rows: auto;
-    gap: 6px 7px;
+    gap: 8px 10px;
     align-items: center;
+    margin-bottom: 6px;
   }
 
   body.cabinet-mode .cabinet-btn {
-    width: 22px;
-    height: 22px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    background: radial-gradient(circle at 32% 30%, rgba(255,255,255,0.35) 0%, currentColor 42%, rgba(0,0,0,0.7) 100%);
+    background: radial-gradient(circle at 32% 30%, rgba(255,255,255,0.38) 0%, currentColor 42%, rgba(0,0,0,0.72) 100%);
     box-shadow:
-      inset 0 -2px 4px rgba(0, 0, 0, 0.65),
-      inset 0 2px 3px rgba(255, 255, 255, 0.2),
-      0 0 8px currentColor,
-      0 2px 3px rgba(0, 0, 0, 0.5);
+      inset 0 -3px 5px rgba(0, 0, 0, 0.65),
+      inset 0 2px 4px rgba(255, 255, 255, 0.22),
+      0 0 12px currentColor,
+      0 3px 5px rgba(0, 0, 0, 0.55);
     position: relative;
     animation: button-pulse 3.2s ease-in-out infinite;
 
-    // Thin recessed bezel ring around each button
+    // Recessed metal bezel ring — makes buttons feel mounted into the plate
     &::before {
       content: '';
       position: absolute;
-      inset: -3px;
+      inset: -5px;
       border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, #2c2c3c 0%, #18182a 60%, #08080f 100%);
+      background: radial-gradient(circle at 30% 30%, #3a3a4a 0%, #1a1a2c 55%, #08080f 100%);
       z-index: -1;
-      box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.9);
+      box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.9), inset 0 1px 1px rgba(255, 255, 255, 0.05);
     }
   }
 
-  // Faded "1P CREDITS ∞" label — pushed to the right side of the panel
+  // Not rendered — we dropped the middle label since the joystick/buttons
+  // alone communicate the control panel clearly.
   body.cabinet-mode .cabinet-label {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-family: 'VT323', monospace;
-    color: rgba($cyber-green, 0.55);
-    font-size: 0.9rem;
-    letter-spacing: 2px;
-    text-shadow: 0 0 4px rgba($cyber-green, 0.3);
-    padding-bottom: 4px;
-
-    .cabinet-label-sub {
-      color: rgba($cyber-orange, 0.5);
-      letter-spacing: 1px;
-      font-size: 0.85rem;
-    }
+    display: none;
   }
 
   body.cabinet-mode .cabinet-btn-pink   { color: $cyber-pink;   animation-delay: 0s;   }
@@ -2631,7 +2616,7 @@ hr {
   body.cabinet-mode .cabinet-rail {
     position: fixed;
     top: 58px;
-    bottom: 72px;
+    bottom: 92px;
     width: 42px;
     z-index: 997;
     pointer-events: none;
