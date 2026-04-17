@@ -76,55 +76,61 @@
 <div class="cabinet-rail cabinet-rail-right" aria-hidden="true"></div>
 <div class="cabinet-coinslot" aria-hidden="true">INSERT COIN</div>
 
-<!-- Bottom control deck: joystick (left), player label (center), 4 buttons (right) -->
+<!-- Bottom control deck: P1 cluster (joystick + 2×3 button grid) on the left,
+     faded credits indicator floating right. Rendered only when cabinet-mode is on
+     AND screen is wide enough (CSS handles the hiding). -->
 <div class="cabinet-controls" aria-hidden="true">
-  <!-- Joystick: circular base with a stick + ball -->
-  <svg class="cabinet-joystick" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <radialGradient id="joyBase" cx="50%" cy="40%" r="60%">
-        <stop offset="0%" stop-color="#4a4a6a"/>
-        <stop offset="70%" stop-color="#1a1a2a"/>
-        <stop offset="100%" stop-color="#0a0a12"/>
-      </radialGradient>
-      <radialGradient id="joyInner" cx="50%" cy="40%" r="60%">
-        <stop offset="0%" stop-color="#2a2a3a"/>
-        <stop offset="100%" stop-color="#0a0a10"/>
-      </radialGradient>
-      <linearGradient id="joyShaft" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%"  stop-color="#3a3a4a"/>
-        <stop offset="50%" stop-color="#7a7a9a"/>
-        <stop offset="100%" stop-color="#3a3a4a"/>
-      </linearGradient>
-      <radialGradient id="joyBall" cx="35%" cy="30%" r="70%">
-        <stop offset="0%"  stop-color="#ff6bd3"/>
-        <stop offset="50%" stop-color="#e100ff"/>
-        <stop offset="100%" stop-color="#4a0066"/>
-      </radialGradient>
-    </defs>
-    <!-- Outer base plate -->
-    <circle cx="40" cy="62" r="18" fill="url(#joyBase)" stroke="#0a0a12" stroke-width="1"/>
-    <!-- Recessed inner ring -->
-    <circle cx="40" cy="62" r="13" fill="url(#joyInner)"/>
-    <!-- Shaft (tilted slightly for character) -->
-    <rect x="36" y="30" width="8" height="28" rx="3" fill="url(#joyShaft)" stroke="#1a1a2a" stroke-width="0.5"/>
-    <!-- Ball on top with neon pink glow -->
-    <circle cx="40" cy="26" r="12" fill="url(#joyBall)" stroke="#2a0040" stroke-width="1"/>
-    <!-- Specular highlight on ball -->
-    <ellipse cx="35" cy="22" rx="4" ry="2.5" fill="rgba(255,255,255,0.5)"/>
-  </svg>
+  <!-- Left: P1 cluster (joystick + button pad tight together, like a real CP) -->
+  <div class="cabinet-cluster">
+    <svg class="cabinet-joystick" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="joyBase" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#4a4a6a"/>
+          <stop offset="70%" stop-color="#1a1a2a"/>
+          <stop offset="100%" stop-color="#0a0a12"/>
+        </radialGradient>
+        <radialGradient id="joyInner" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#2a2a3a"/>
+          <stop offset="100%" stop-color="#0a0a10"/>
+        </radialGradient>
+        <linearGradient id="joyShaft" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"  stop-color="#3a3a4a"/>
+          <stop offset="50%" stop-color="#7a7a9a"/>
+          <stop offset="100%" stop-color="#3a3a4a"/>
+        </linearGradient>
+        <radialGradient id="joyBall" cx="35%" cy="30%" r="70%">
+          <stop offset="0%"  stop-color="#ff6bd3"/>
+          <stop offset="50%" stop-color="#e100ff"/>
+          <stop offset="100%" stop-color="#4a0066"/>
+        </radialGradient>
+      </defs>
+      <!-- Outer base plate -->
+      <circle cx="40" cy="62" r="18" fill="url(#joyBase)" stroke="#0a0a12" stroke-width="1"/>
+      <!-- Recessed inner ring -->
+      <circle cx="40" cy="62" r="13" fill="url(#joyInner)"/>
+      <!-- Shaft (tilted slightly for character) -->
+      <rect x="36" y="30" width="8" height="28" rx="3" fill="url(#joyShaft)" stroke="#1a1a2a" stroke-width="0.5"/>
+      <!-- Ball on top with neon pink glow -->
+      <circle cx="40" cy="26" r="12" fill="url(#joyBall)" stroke="#2a0040" stroke-width="1"/>
+      <!-- Specular highlight on ball -->
+      <ellipse cx="35" cy="22" rx="4" ry="2.5" fill="rgba(255,255,255,0.5)"/>
+    </svg>
 
-  <!-- Center player/coin label — compact inline form -->
+    <!-- 6 buttons in 2 rows × 3 cols (classic Street Fighter / arcade layout) -->
+    <div class="cabinet-buttons">
+      <div class="cabinet-btn cabinet-btn-pink"></div>
+      <div class="cabinet-btn cabinet-btn-cyan"></div>
+      <div class="cabinet-btn cabinet-btn-green"></div>
+      <div class="cabinet-btn cabinet-btn-orange"></div>
+      <div class="cabinet-btn cabinet-btn-pink"></div>
+      <div class="cabinet-btn cabinet-btn-cyan"></div>
+    </div>
+  </div>
+
+  <!-- Faded credits counter pushed to the right edge -->
   <div class="cabinet-label">
     <span>1P</span>
     <span class="cabinet-label-sub">▮ CREDITS ∞</span>
-  </div>
-
-  <!-- Four arcade buttons -->
-  <div class="cabinet-buttons">
-    <div class="cabinet-btn cabinet-btn-pink"></div>
-    <div class="cabinet-btn cabinet-btn-cyan"></div>
-    <div class="cabinet-btn cabinet-btn-green"></div>
-    <div class="cabinet-btn cabinet-btn-orange"></div>
   </div>
 </div>
 <button type="button" class="cabinet-toggle" id="cabinet-toggle" title="Toggle arcade cabinet frame">

@@ -2466,12 +2466,28 @@ hr {
   }
 }
 
+// Hide cabinet chrome by default. Only render it when cabinet-mode is
+// active AND the screen is wide enough (handled via media query below).
+.cabinet-rail,
+.cabinet-coinslot,
+.cabinet-controls {
+  display: none;
+}
+
+// Show the chrome only when BOTH body has cabinet-mode AND screen ≥ 1400px.
+// The detailed styling below lives inside the same @media block.
+@media (min-width: 1400px) {
+  body.cabinet-mode .cabinet-rail,
+  body.cabinet-mode .cabinet-coinslot { display: block; }
+  body.cabinet-mode .cabinet-controls { display: flex; }
+}
+
 /* Cabinet chrome — only on wide screens */
 @media (min-width: 1400px) {
   body.cabinet-mode {
     // Give content room for marquee + control panel
     padding-top: 68px;
-    padding-bottom: 56px;
+    padding-bottom: 82px;
     // Side rails eat some horizontal space
     padding-left: 42px;
     padding-right: 42px;
@@ -2504,82 +2520,105 @@ hr {
 
   }
 
-  // Bottom control panel — "peering through arcade glass" effect.
-  // Subtle, low-contrast, feels like part of the cabinet chassis
-  // rather than a bright UI element in front of the content.
+  // Bottom control panel — feels like a real arcade cabinet's control deck
+  // you're looking down past. Dark metal, top edge fades into the screen
+  // content above so it blends rather than stamps a hard line.
   body.cabinet-mode .cabinet-controls {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 46px;
+    height: 72px;
     z-index: 998;
     pointer-events: none;
-    // Darker, more atmospheric — you're looking PAST it
+    // Metal-panel gradient: fades in from above, solid dark at the bottom
     background:
-      linear-gradient(180deg, transparent 0%, rgba(6, 6, 14, 0.85) 35%, rgba(4, 4, 10, 0.95) 100%);
-    border-top: 1px solid rgba($cyber-cyan, 0.2);
-    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.6);
+      linear-gradient(180deg,
+        transparent 0%,
+        rgba(20, 12, 30, 0.55) 25%,
+        rgba(10, 8, 18, 0.92) 55%,
+        #0a0612 100%
+      ),
+      // Subtle brushed-metal horizontal noise for texture
+      repeating-linear-gradient(90deg,
+        rgba(50, 40, 70, 0.05) 0px,
+        rgba(50, 40, 70, 0.05) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+    border-top: 1px solid rgba($cyber-cyan, 0.25);
+    box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: flex-end;
+    padding: 0 3rem 10px 6rem;
+    gap: 2.5rem;
+  }
+
+  // The LEFT cluster — joystick + 6 buttons grouped like a real P1 panel
+  body.cabinet-mode .cabinet-cluster {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 4rem;
-    // Whole panel receives a slight blur and opacity to recede into depth
-    opacity: 0.55;
-    filter: blur(0.4px);
+    gap: 22px;
   }
 
   body.cabinet-mode .cabinet-joystick {
-    height: 32px;
-    filter: drop-shadow(0 0 4px rgba($cyber-pink, 0.25));
+    height: 50px;
+    filter: drop-shadow(0 0 6px rgba($cyber-pink, 0.45));
     animation: joystick-sway 6s ease-in-out infinite;
     transform-origin: 50% 85%;
   }
 
-  body.cabinet-mode .cabinet-label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: 'VT323', monospace;
-    color: rgba($cyber-green, 0.55);
-    font-size: 0.85rem;
-    letter-spacing: 2px;
-    text-shadow: 0 0 4px rgba($cyber-green, 0.3);
-
-    .cabinet-label-sub {
-      color: rgba($cyber-orange, 0.5);
-      letter-spacing: 1px;
-      font-size: 0.8rem;
-    }
-  }
-
+  // Six buttons in 2 rows × 3 cols — authentic arcade button layout
   body.cabinet-mode .cabinet-buttons {
-    display: flex;
-    gap: 9px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: auto;
+    gap: 6px 7px;
     align-items: center;
   }
 
   body.cabinet-mode .cabinet-btn {
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, currentColor 45%, rgba(0,0,0,0.7) 100%);
+    background: radial-gradient(circle at 32% 30%, rgba(255,255,255,0.35) 0%, currentColor 42%, rgba(0,0,0,0.7) 100%);
     box-shadow:
-      inset 0 -2px 3px rgba(0, 0, 0, 0.6),
-      inset 0 1px 2px rgba(255, 255, 255, 0.15),
-      0 0 6px currentColor;
+      inset 0 -2px 4px rgba(0, 0, 0, 0.65),
+      inset 0 2px 3px rgba(255, 255, 255, 0.2),
+      0 0 8px currentColor,
+      0 2px 3px rgba(0, 0, 0, 0.5);
     position: relative;
-    animation: button-pulse 3s ease-in-out infinite;
+    animation: button-pulse 3.2s ease-in-out infinite;
 
-    // Thin dark bezel — keeps buttons looking recessed
+    // Thin recessed bezel ring around each button
     &::before {
       content: '';
       position: absolute;
-      inset: -2px;
+      inset: -3px;
       border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, #2a2a3a 0%, #1a1a2a 60%, #0a0a10 100%);
+      background: radial-gradient(circle at 30% 30%, #2c2c3c 0%, #18182a 60%, #08080f 100%);
       z-index: -1;
-      box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.8);
+      box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.9);
+    }
+  }
+
+  // Faded "1P CREDITS ∞" label — pushed to the right side of the panel
+  body.cabinet-mode .cabinet-label {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'VT323', monospace;
+    color: rgba($cyber-green, 0.55);
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    text-shadow: 0 0 4px rgba($cyber-green, 0.3);
+    padding-bottom: 4px;
+
+    .cabinet-label-sub {
+      color: rgba($cyber-orange, 0.5);
+      letter-spacing: 1px;
+      font-size: 0.85rem;
     }
   }
 
@@ -2592,7 +2631,7 @@ hr {
   body.cabinet-mode .cabinet-rail {
     position: fixed;
     top: 58px;
-    bottom: 46px;
+    bottom: 72px;
     width: 42px;
     z-index: 997;
     pointer-events: none;
