@@ -1,12 +1,21 @@
 # TechFest CTF 2026 — Platform (CTFd Fork)
 
-> **For AI sessions:** This file is your entry point. Read it before making changes.
+> **For AI sessions:** This file is your entry point. Read it, then read the project's
+> active backlog at [`../../techfest/techfest/TASKS.md`](../../techfest/techfest/TASKS.md)
+> before making changes — it tracks open work and recently-completed items so you don't
+> redo or duplicate effort.
 > **For human devs:** See also [`CONTRIBUTING.md`](./CONTRIBUTING.md) for workflow,
 > debugging tips, and the upstream CTFd contributing guide.
 >
-> **Keep this file accurate.** If you change Docker compose, the init pipeline, the
-> arcade theme architecture, or add new gotchas, update both this file and
-> `CONTRIBUTING.md` in the same commit.
+> **Three living documents — keep them accurate:**
+> 1. **`CLAUDE.md`** (this file) — what's customized in this fork vs. stock CTFd
+> 2. **`CONTRIBUTING.md`** — developer workflow, debugging, conventions
+> 3. **`TASKS.md`** in the challenge repo — running project-wide backlog. **Check items
+>    off when complete (don't delete); add new tasks as you discover them.**
+>
+> If you change Docker compose, the init pipeline, the arcade theme architecture, or
+> add new gotchas, update CLAUDE.md and CONTRIBUTING.md in the same commit. If you
+> complete or discover a task, update `../../techfest/techfest/TASKS.md` in the same commit.
 
 ## Project Purpose
 This is a forked CTFd with a heavily customized `arcade` theme for TechFest CTF 2026.

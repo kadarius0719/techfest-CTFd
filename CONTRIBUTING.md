@@ -138,11 +138,23 @@ warning line, and confirm `pages/rules.md` exists in the challenge repo.
 
 ## 7. Updating These Docs
 
-**Both `CLAUDE.md` and `CONTRIBUTING.md` in this repo are living documents.** If you
-make a change that affects how people run, build, or debug the platform, update them
-in the same commit.
+**Three living documents — keep them accurate:**
 
-Common triggers:
+1. **[`CLAUDE.md`](./CLAUDE.md)** — what's customized in this fork, key file paths
+2. **`CONTRIBUTING.md`** (this file) — workflow, debugging, conventions
+3. **`TASKS.md`** in the challenge repo at
+   [`../../techfest/techfest/TASKS.md`](../../techfest/techfest/TASKS.md) — running
+   project-wide backlog
+
+If you make a change that affects how people run, build, or debug the platform, update
+CLAUDE.md and CONTRIBUTING.md in the same commit.
+
+If you complete a task — even a small one — **check it off in `TASKS.md` in the same
+commit that finishes it**. Never delete a completed task; we keep the [x] history so
+future sessions can see what's been done. If you discover new work that needs doing,
+add it to TASKS.md immediately, don't rely on memory.
+
+Common triggers to update CLAUDE.md / CONTRIBUTING.md:
 - Changes to `docker-compose.yml` (ports, volumes, services)
 - Changes to the init pipeline
 - New theme features or arcade components
