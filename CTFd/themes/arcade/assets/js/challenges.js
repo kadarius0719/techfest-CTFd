@@ -339,6 +339,7 @@ Alpine.data("ChallengeBoard", () => ({
     "AI Arena":         { icon: "⬢",  color: "#e100ff" },
     "Code Breakers":    { icon: "⚡", color: "#ffe66d" },
     "Bonus Stage":      { icon: "★",  color: "#ff6b35" },
+    "Physical Security":{ icon: "⌬",  color: "#ff2244" },
     "Easter Eggs":      { icon: "?",  color: "#ffe66d" },
   },
 
@@ -356,6 +357,8 @@ Alpine.data("ChallengeBoard", () => ({
     "Packet Arena":     { x: 200,  y: 570, pctX: 14.29, pctY: 81.43 },
     "Code Breakers":    { x: 700,  y: 570, pctX: 50,    pctY: 81.43 },
     "Bonus Stage":      { x: 1200, y: 570, pctX: 85.71, pctY: 81.43 },
+    // Physical Security — south alcove off J_BR (uses existing south stub corridor)
+    "Physical Security":{ x: 950,  y: 620, pctX: 67.86, pctY: 88.57 },
     // Easter Eggs — hidden node in center of maze
     "Easter Eggs":      { x: 700,  y: 240, pctX: 50,    pctY: 34.29 },
     // Corridor junction waypoints
@@ -387,8 +390,10 @@ Alpine.data("ChallengeBoard", () => ({
     "Packet Arena":    ["Data Dungeon", "J_BL"],
     "J_BL":            ["Packet Arena", "Code Breakers"],
     "Code Breakers":   ["J_BL", "Secure Fortress", "J_BR"],
-    "J_BR":            ["Code Breakers", "Bonus Stage"],
+    "J_BR":            ["Code Breakers", "Bonus Stage", "Physical Security"],
     "Bonus Stage":     ["J_BR", "AI Arena"],
+    // South alcove
+    "Physical Security":["J_BR"],
   },
 
   async init() {
