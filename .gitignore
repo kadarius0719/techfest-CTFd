@@ -80,3 +80,9 @@ node_modules/
 
 # Flask Profiler files
 flask_profiler.sql
+
+# Claude Code local config (launch.json, agent settings, etc.)
+.claude/
+
+# Vite/Rollup sourcemaps generated during local builds
+CTFd/themes/arcade/static/assets/*.js.map
