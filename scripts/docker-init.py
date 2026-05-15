@@ -418,6 +418,14 @@ def import_challenges(token):
     failed = 0
     total_files_uploaded = 0
 
+    # Build a title -> id map as we go so we can resolve unlockConditions
+    # (CTFd's `requirements` field expects challenge IDs, not titles, and
+    # prereq challenges may not exist yet on first import — so we collect
+    # requirements during the create/update pass and apply them in a second
+    # pass once every challenge has an id.)
+    title_to_id = dict(existing_map)
+    pending_requirements = []  # list of (challenge_id, {prerequisites: [titles], anonymize: bool})
+
     for c in challenges:
         flags = c.pop("flags", [])
         tags = c.pop("tags", [])
@@ -436,6 +444,9 @@ def import_challenges(token):
             if code == 200:
                 updated += 1
                 print(f"  {CYAN}↻{NC} {c['name']} (updated)", flush=True)
+                title_to_id[c["name"]] = existing_id
+                if requirements:
+                    pending_requirements.append((existing_id, requirements))
                 # Upload files for existing challenge (skips if already present)
                 if files:
                     total_files_uploaded += upload_challenge_files(
@@ -451,6 +462,9 @@ def import_challenges(token):
 
         if code == 200:
             cid = data["data"]["id"]
+            title_to_id[c["name"]] = cid
+            if requirements:
+                pending_requirements.append((cid, requirements))
 
             for flag in flags:
                 flag["challenge_id"] = cid
@@ -482,6 +496,42 @@ def import_challenges(token):
     ok(f"Import complete — {imported} new, {updated} updated, {skipped} skipped, {failed} failed")
     if total_files_uploaded > 0:
         ok(f"Uploaded {total_files_uploaded} challenge file(s) total")
+
+    # Second pass: apply unlockConditions / boss gates now that every
+    # challenge has an id we can reference.
+    if pending_requirements:
+        log(f"Applying prerequisites to {len(pending_requirements)} challenge(s)...")
+        req_applied = 0
+        req_failed = 0
+        req_unchanged = 0
+        for cid, req in pending_requirements:
+            prereq_titles = req.get("prerequisites", [])
+            prereq_ids = []
+            missing = []
+            for title in prereq_titles:
+                pid = title_to_id.get(title)
+                if pid is not None:
+                    prereq_ids.append(pid)
+                else:
+                    missing.append(title)
+            if missing:
+                warn(f"  Challenge id={cid}: prereq title(s) not found: {missing}")
+            if not prereq_ids:
+                req_unchanged += 1
+                continue
+            payload = {
+                "requirements": {
+                    "prerequisites": prereq_ids,
+                    "anonymize": req.get("anonymize", True),
+                }
+            }
+            code, _ = http_patch_json(f"/api/v1/challenges/{cid}", payload, token)
+            if code == 200:
+                req_applied += 1
+            else:
+                req_failed += 1
+                warn(f"  Challenge id={cid}: requirements PATCH failed HTTP {code}")
+        ok(f"Prerequisites applied — {req_applied} ok, {req_failed} failed, {req_unchanged} unresolved")
 
 
 # ---------------------------------------------------------------------------
